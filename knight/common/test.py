@@ -3,6 +3,7 @@ Created on 2013-8-29
 
 @author: zhouyu
 '''
+'''
 import string, threading, time
  
 def thread_main(a):
@@ -37,3 +38,5 @@ if __name__ == '__main__':
     num = 4
 
     main(4)
+'''
+
