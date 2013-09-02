@@ -87,9 +87,9 @@ def _run_wsgi(app_name):
     '''
     start tasks scheuler thread
     '''
-    print 'create thread'
-    thr = Thread(target=task_loop, name='task loop')
-    thr.start()
+    #print 'create thread'
+    #thr = Thread(target=task_loop, name='task loop')
+    #thr.start()
 
     app = loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:

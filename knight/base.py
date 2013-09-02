@@ -3,6 +3,7 @@ import resource as wsgi_resource
 import subprocess
 import commands 
 import deploy_agent
+import task_agent
 
 class Controller(object):
     LIST = 'list'
@@ -16,12 +17,15 @@ class Controller(object):
                  allow_pagination=False, allow_sorting=False):
         if member_actions is None:
             member_actions = []
-        self._agent = deploy_agent.DeployAgent()
+        #self._agent = deploy_agent.DeployAgent()
+        self._agent = task_agent.TaskAgent()
         self._collection = collection.replace('-', '_')
         self._resource = resource.replace('-', '_')
 
     def index(self, request, **kwargs):
-        pass
+        method = getattr(self._agent, "list_%s" % self._collection)
+        return method()
+        
 
     def create(self, request, body=None, **kwargs):
 

@@ -31,3 +31,9 @@ class NotImplementedError(BaseException):
 
 class MalformedRequestBody(BaseException):
     message = 'Invalid fromed request'
+
+class Duplicate(BaseException):
+    message = 'duplicate database entry'
+      
+class SensorNotFound(BaseException):
+    message = 'sensor not found'  

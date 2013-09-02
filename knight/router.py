@@ -15,7 +15,8 @@ RESOURCES = {'dhcp': 'dhcps',
              'firewall' : 'firewalls',
              'node' : 'nodes',
              'system': 'systems', 
-             'interface':'interfaces'}
+             'interface':'interfaces',
+             'task':'tasks'}
             
 #SUB_RESOURCES = {}                                                                                                                           
 COLLECTION_ACTIONS = ['index', 'create']

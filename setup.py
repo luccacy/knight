@@ -24,6 +24,6 @@ A deploy package for openstack work on centos system
       author_email='zhouyu@rockontrol.com',
       url='http://rockontrol.com',
       zip_safe=False,
-      install_requires=['pastedeploy', 'routes'],
+      install_requires=['eventlet','webob','iso8601','paste', 'pyparsing','netaddr','requests','pastedeploy', 'routes'],
       packages=find_packages(exclude=['tests']),
       )
