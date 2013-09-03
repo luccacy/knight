@@ -6,6 +6,7 @@ Created on 2013-8-29
 from knight import tasks
 
 taskstore_instance = tasks.TS
+taskstore_lock = tasks.LOCK
 
 class TaskController(object):
     def __init__(self):
@@ -32,6 +33,7 @@ class TaskController(object):
         '''
         check if has the same task running
         '''
+        taskstore_lock.acquire()
         taskstore = taskstore_instance.task_store
         if taskstore.has_key(port):
             taskgroup = taskstore[port]
@@ -40,6 +42,7 @@ class TaskController(object):
             taskgroup = tasks.TaskGroup(port)
             taskgroup.add_task(task,'custom')
             taskstore_instance.add_taskgroup(port, taskgroup)
+        taskstore_lock.release()
     
     def delete_task(self):
         pass
