@@ -4,6 +4,7 @@ Created on 2013-9-3
 @author: zhouyu
 '''
 from apscheduler.scheduler import Scheduler
+from threading import Thread
 from knight.db import api as DB_API
 from knight import tasks
 import time
@@ -11,7 +12,14 @@ import time
 
 taskstore_instance = tasks.TS
 taskstore_lock = tasks.LOCK
+
+def do_task():
+    pass
     
+def do_a_task_in_thread():
+    thread = Thread(do_task, name='do_task')
+    thread.start()
+
 def timer_job():    
     '''load all sensor and push to taskstore'''
     all_sensors = DB_API.sensor_get_all()
@@ -42,9 +50,9 @@ def timer_job():
         serial_lock = taskgroup.serial_lock
         timer_tasks = taskgroup.timer_tasks
         serial_lock.acquire()
-        taskgroup.serial_open()
+        serial_inst = taskgroup.serial_open()
         for task in timer_tasks:
-            task.start()
+            task.start(serial_inst)
             while True:
                 '''fix me to decide if task end'''
                 if(task.get_result() == None):
