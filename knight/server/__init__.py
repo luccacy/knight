@@ -31,7 +31,7 @@ core_opts = [
 
 def main():
 
-    cfg.CONF(args=sys.argv[1:], project='artisan')
+    cfg.CONF(args=sys.argv[1:], project='knight')
 
     try:
         deploy_service = service.serve_wsgi(service.DeployApiService)

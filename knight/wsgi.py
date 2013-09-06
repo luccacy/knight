@@ -27,7 +27,7 @@ def run_server(application, port):
 class Server(object):
     """Server class to manage multiple WSGI sockets and applications."""
 
-    def __init__(self, name, threads=1000):
+    def __init__(self, name, threads=10):       
         self.pool = eventlet.GreenPool(threads)
         self.name = name
 
@@ -51,7 +51,7 @@ class Server(object):
                                            family=family,
                                            backlog=backlog)
         except:                       
-            LOG.debug("unable to bind the port : %s, maybe it's in use", self._port)
+            LOG.error("unable to bind the port : %s, maybe it's in use", self._port)
             sys.exit(1)                    
         
         self._server = self.pool.spawn(self._run, application, self._socket)

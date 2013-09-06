@@ -24,6 +24,7 @@ CONF.register_opts(core_opts)
 
 LOG = logger.get_logger(__name__)
 
+
 class WsgiService(object):
     """Base class for WSGI based services.
 
@@ -74,12 +75,13 @@ def serve_wsgi(cls):
         
 def task_loop():
     while True:
-        print 'task loop'
+        LOG.error('task loop')
         time.sleep(2)
     
 def _run_wsgi(app_name):
 
     configfile=CONF.paste_file
+    #configfile = '/etc/knight/api-paste.ini'
     port = CONF.port
     listen_addr = CONF.listen_addr
     appname="knight"
@@ -88,15 +90,18 @@ def _run_wsgi(app_name):
     start tasks scheuler thread
     '''
     #print 'create thread'
+    #LOG.info('create thread')
     #thr = Thread(target=task_loop, name='task loop')
     #thr.start()
 
+    
     app = loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:
         LOG.error(('No known API applications configured.'))
         return
-
-    server = wsgi.Server(appname)
+    
+    server = wsgi.Server(appname)    
     server.start(app, port, listen_addr)
+    
 
     return server

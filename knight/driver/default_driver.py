@@ -300,6 +300,7 @@ class DefaultDriver(DeployBase):
     
     def get_hostname(self, id):
         node = id.replace('-', '.')
+        LOG.info('get hostname')
         
         if node == 'all':
             return hostutils.get_hosts()
