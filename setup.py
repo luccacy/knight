@@ -45,11 +45,11 @@ knightservice = Target(
     description = "knight service",
     # what to build.  For a service, the module name (not the
     # filename) must be specified!
-    modules = ["knight.win_service"]
+    modules = ["knight.win_service"],
+    cmdline_style = 'pywin32',
     )
 
-includes = ['eventlet','webob','iso8601','knight', 'pyparsing','netaddr',
-            'requests','routes']
+includes = ['eventlet', 'webob', 'iso8601', 'pkg_resources','knight', 'pyparsing','netaddr', 'requests','routes', 'SocketServer', 'BaseHTTPServer', 'sqlalchemy.util.queue','serial']
 
 options = {'py2exe':
            {'compressed': 1,
