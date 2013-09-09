@@ -4,9 +4,17 @@ Created on 2013-8-29
 @author: zhouyu
 '''
 from knight import tasks
+from knight import timer_scheduler
+from knight import task_scheduler
 
+
+taskstore = tasks.TS.task_store
 taskstore_instance = tasks.TS
-taskstore_lock = tasks.LOCK
+taskstore_lock = tasks.TS_LOCK
+tasklist = tasks.TL
+tasklist_lock = tasks.TL_LOCK
+
+sched = timer_scheduler.SCH
 
 class TaskController(object):
     def __init__(self):
@@ -14,7 +22,7 @@ class TaskController(object):
     
     def list_tasks(self):
         print 'list tasks'
-        taskstore = taskstore_instance.task_store
+        
         for group in taskstore:
             taskgroup = taskstore[group]
             port = taskgroup.port
@@ -29,29 +37,70 @@ class TaskController(object):
     def create_task(self, args):
         port = args.pop('port')
         task = tasks.Task(port)
+        taskgroup = None
+        action = ''
         print 'create task'
         '''
         check if has the same task running
-        '''
-        taskstore_lock.acquire()
-        taskstore = taskstore_instance.task_store
+        '''        
+
         if taskstore.has_key(port):
             taskgroup = taskstore[port]
-            taskgroup.add_task(task, 'custom')
+            print taskgroup.custom_tasks_num
+            if taskgroup.custom_tasks_num > 0:
+                action = 'waiting'
+            else:
+                action = 'running'     
         else:
-            taskgroup = tasks.TaskGroup(port)
-            taskgroup.add_task(task,'custom')
-            taskstore_instance.add_taskgroup(port, taskgroup)
-        taskstore_lock.release()
+            action = 'running'
+            
+        print('action : %s' % action)
+            
+        if action == 'waiting':
+            print '''push to task list'''
+            tasklist_lock.acquire()
+            tasklist.append(task)
+            tasklist_lock.release()
+                
+        elif action == 'running':
+            '''run in thread?'''
+            if taskgroup == None: 
+                taskgroup = tasks.TaskGroup(port)
+                
+            taskthread = task_scheduler.TaskThread(taskgroup, task)
+            taskthread.start()
+            
+    def create_timer(self):
+        try:
+            
+            sched.add_cron_job(timer_scheduler.timer_task_scheduler, 
+                               day_of_week='0-6', hour=0, minute=0)
+            sched.start()
+        except:
+            raise
+        
+        
+    def delete_timer(self):
+        try:
+            sched.unschedule_job(timer_scheduler.timer_task_scheduler) 
+            sched.shutdown(wait=False)    
+        except:
+            raise                                  
     
     def delete_task(self):
         pass
     
-    def show_task(self):
-        pass
+    def get_task(self,id):
+        print 'show task list'
+        for task in tasklist:
+            print task.port
+        
     
-    def update_task(self):
-        pass
+    def update_task(self,id, args):
+        for port in ('0','1','2','3','4'):
+            for i in range(3):
+                task = tasks.Task(port)
+                tasklist.append(task)
 
 '''
 all_tasks = []

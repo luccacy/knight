@@ -24,3 +24,15 @@ class TaskAgent(object):
         
     def get_task(self, id):
         self._driver.get_task(id)
+        
+    def update_task(self, id, args):
+        self._driver.update_task(id,args)
+        
+    def list_timers(self):
+        self._driver.list_timers()
+        
+    def create_timer(self, args):
+        self._driver.create_timer(args)
+    
+    def delete_timer(self, id):
+        self._driver.delete_timer(id)

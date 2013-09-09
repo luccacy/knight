@@ -28,7 +28,7 @@ class SerialControl(object):
             raise
         
     def close(self):
-        self.stop_thread()               #stop reader thread
+        #self.stop_thread()               #stop reader thread
         self.s.close()             #cleanup
         self.Destroy()                  #close windows, exit app
 

@@ -3,12 +3,13 @@ import logging as std_logging
 import os
 import random
 import time
-from paste.deploy.loadwsgi import loadapp
+from knight.paste.deploy.loadwsgi import loadapp
 
 import wsgi
 from knight.common import cfg
 from knight.common import logger
 from threading import Thread, Event, Lock
+from knight import task_scheduler
 
 core_opts = [
     cfg.StrOpt('listen_addr', default='0.0.0.0',
@@ -89,12 +90,9 @@ def _run_wsgi(app_name):
     '''
     start tasks scheuler thread
     '''
-    #print 'create thread'
-    #LOG.info('create thread')
-    #thr = Thread(target=task_loop, name='task loop')
-    #thr.start()
-
-    
+    thr = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
+    thr.start()
+ 
     app = loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:
         LOG.error(('No known API applications configured.'))

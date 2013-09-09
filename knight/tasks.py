@@ -24,10 +24,16 @@ class Task(object):
         self.sensor_n = None
         
     def start(self, serial):
-        serial.start_thread()
-        serial.write("#R#")
-        time.sleep(1)
-        self.output = serial.output           
+#         serial.start_thread()
+#         serial.write("#R#")
+#         time.sleep(1)
+#         self.output = serial.output
+        pass
+        
+    def stop(self, serial):
+#         serial.stop_thread()   
+#         self.output = None        
+        pass
     
     def get_result(self):
         return self.output
@@ -45,7 +51,7 @@ class TaskGroup(object):
         self.custom_tasks_num = 0 
         self.is_port_busy = False
         self.serial = None
-        self.serial_lock = Lock()
+        self.tg_lock = Lock()
 
     def add_task(self, task, type):
         if type == 'custom':
@@ -63,19 +69,28 @@ class TaskGroup(object):
             self.timer_tasks.remove(task)
             self.timer_tasks_num = self.timer_tasks_num - 1
             
+    def clear_tasks(self, type):
+        if type == 'custom':
+            del self.custom_tasks[:]            
+            self.custom_tasks_num = 0
+        else:
+            del self.timer_tasks[:]            
+            self.timer_tasks_num = 0
+            
     def run_task(self, task):
         if not self.serial:
             raise 'serial does not opened!'
         task.start(self.serial)
             
     def serial_open(self):
-        self.serial = serialutils.SerialControl(5)
-        self.serial.open()
-        return self.serial     
-    
+#         self.serial = serialutils.SerialControl(5)
+#         self.serial.open()
+#         return self.serial     
+        pass
     def serial_close(self):
-        self.serial.close()
-        self.status = 'finished'
+#         self.serial.close()
+#         self.status = 'finished'
+        pass
         
     def set_port_status(self, status):
         '''True : busy, False : idle'''
@@ -101,5 +116,7 @@ class TaskStore(object):
         return self.task_store
     
 TS = TaskStore()
-LOCK = TS.task_store_lock
+TS_LOCK = TS.task_store_lock
+TL = []
+TL_LOCK = Lock()
     
