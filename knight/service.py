@@ -10,6 +10,7 @@ from knight.common import cfg
 from knight.common import logger
 from threading import Thread, Event, Lock
 from knight import task_scheduler
+from knight import timer_scheduler
 
 core_opts = [
     cfg.StrOpt('listen_addr', default='0.0.0.0',
@@ -90,8 +91,14 @@ def _run_wsgi(app_name):
     '''
     start tasks scheuler thread
     '''
-    thr = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
-    thr.start()
+    thr_custom = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
+    thr_custom.start()
+    
+    '''
+    start timer scheduler thread
+    '''
+    thr_timer = timer_scheduler.TimerThread()
+    thr_timer.start()
  
     app = loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:

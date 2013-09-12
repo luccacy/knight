@@ -4,18 +4,25 @@ Created on 2013-8-29
 @author: zhouyu
 '''
 from apscheduler.scheduler import Scheduler
+from threading import Thread
 import datetime
 import tasks
 import time
 from knight.db import api as DB_API
 
 TEN_MINUTE=10*60
+THREE_HOUR=3*60*60
 taskstore = tasks.TS.task_store
 taskstore_lock = tasks.TS_LOCK
 tasklist = tasks.TL
 tasklist_lock = tasks.TL_LOCK
 
 SCH = Scheduler(daemonic = False)
+jobs = SCH.get_jobs()
+if jobs is None:
+    print 'no job'
+else:
+    print 'have job'
 
 '''scheduler by apscheduler'''
 def timer_task_scheduler():
@@ -69,3 +76,35 @@ def timer_task_scheduler():
         taskstore_lock.release()        
     except:
         raise    
+    
+class TimerThread(Thread):   
+    def __init__(self, taskgroup, task): 
+        super(TimerThread, self).__init__()
+    
+    def run(self):
+        old_timer_id = -1
+        while True:
+            timer_ids = (0,1,2)
+            timer_id = 1
+            internals = (24, 24*3, 24*7)
+            interal = internals[timer_id]
+            
+            if timer_id == old_timer_id:
+                time.sleep(THREE_HOUR)
+                continue
+            
+            old_timer_id = timer_id
+            
+            jobs = SCH.get_jobs()
+            if len(jobs) > 0:
+                SCH.unschedule_job(timer_task_scheduler)
+                         
+            timestamp = time.time()
+            timestruct = time.localtime(timestamp)
+            cur_date = time.strftime('%Y-%m-%d', timestruct)
+            run_time = ('%s 23:59:59' % cur_date)
+        
+            SCH.add_interval_job(timer_task_scheduler, hours=interal, start_date=run_time)
+            SCH.start()
+            
+            time.sleep(THREE_HOUR)
