@@ -24,7 +24,7 @@ def sensor_create(values, session=None):
     sensor_ref.save(session=session)
     return sensor_ref
 
-def sensor_get(sensor_id, session=None):
+def sensor_get_by_id(sensor_id, session=None):
     if session is None:
         session = get_session()
     result = model_query(models.Sensor, session=session).\
@@ -114,6 +114,23 @@ def  battery_get_by_groupid_and_serialnum(group_id, serial_num, session=None):
     result = model_query(models.Battery, session=session).\
                 filter_by(GROUP_V = group_id).\
                 filter_by(SERIAL_N = serial_num).\
+                first()
+                
+    if not result:
+        raise exception.SensorNotFound()
+    
+    return result
+
+'''group_id : string 111111-1
+   serial_num : battery serial num'''
+def  battery_get_count_by_status(group_id, serial_num, status_n,session=None):
+    if session is None:
+        session = get_session()
+        
+    result = model_query(models.Battery, session=session).\
+                filter_by(GROUP_V = group_id).\
+                filter_by(SERIAL_N = serial_num).\
+                filter_by(STATUS_N = status_n).\
                 first()
                 
     if not result:
