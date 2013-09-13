@@ -9,6 +9,9 @@ a task group by serial port
 '''
 from threading import Thread, Lock
 from knight.common import serialutils 
+from knight.common import protocal
+from knight.db import api as DB_API
+
 import time
 
 class Task(object):
@@ -24,15 +27,20 @@ class Task(object):
         self.sensor_n = None
         
     def start(self, serial):
-#         serial.start_thread()
-#         serial.write("#R#")
-#         time.sleep(1)
-#         self.output = serial.output
-        pass
+        serial.start_thread()
+        cmd = protocal.encode_cmd(self.cmd, self.addr)
+        serial.write(self.cmd)
+        
+        time.sleep(1)
+        
+        self.output = serial.output
+        result = protocal.decode_result(self.output)
+        DB_API.store_to_db(self.group_id, self.sensor_n, result)
+        
         
     def stop(self, serial):
-#         serial.stop_thread()   
-#         self.output = None        
+        serial.stop_thread()   
+        self.output = None        
         pass
     
     def get_result(self):
