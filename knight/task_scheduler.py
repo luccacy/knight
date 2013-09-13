@@ -99,7 +99,35 @@ class TaskThread(Thread):
         
         self.taskgroup.tg_lock.release()            
                         
-                        
+class TaskGroupThread(Thread):
+    def __init__(self, taskgroup):
+        super(TaskGroupThread, self).__init__()
+        self.taskgroup = taskgroup
+        
+    def run(self):
+        self.taskgroup.tg_lock.acquire()
+        self.taskgroup.serial_open()
+        
+        tasks = self.taskgroup.custom_tasks
+        for task in tasks:
+            task.start()
+            result = task.get_result()
+
+            time.sleep(10)
+                
+            task.stop(self.taskgroup.serial)
+            
+        self.task.start(self.taskgroup.serial)
+            
+        print 'get task result'
+        result = self.task.get_result()
+        '''deal with result'''
+            
+        self.task.stop(self.taskgroup.serial)
+        self.taskgroup.serial_close()
+        
+        self.taskgroup.tg_lock.release()   
+                           
                 
             
         

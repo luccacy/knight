@@ -6,6 +6,7 @@ Created on 2013-8-29
 from knight import tasks
 from knight import timer_scheduler
 from knight import task_scheduler
+from knight.db import api as DB_API
 
 
 taskstore = tasks.TS.task_store
@@ -35,40 +36,87 @@ class TaskController(object):
                 print('task port : %s' % task.port)
         
     def create_task(self, args):
-        port = args.pop('port')
-        task = tasks.Task(port)
-        taskgroup = None
-        action = ''
-        print 'create task'
-        '''
-        check if has the same task running
-        '''        
-
-        if taskstore.has_key(port):
-            taskgroup = taskstore[port]
-            print taskgroup.custom_tasks_num
-            if taskgroup.custom_tasks_num > 0:
-                action = 'waiting'
+        
+        sensor_ids = args.pop('sensor_ids')
+        sensor_id_list = sensor_ids.split(',')
+        taskstore_tmp = tasks.TaskStore()
+        tasks = []
+        
+        '''from sensor ids to tasks'''
+        for sensor_id in sensor_id_list:
+            sensor_ref = DB_API.sensor_get_by_id(sensor_id)
+            task = tasks.Task(sensor_ref.COM_N)
+            task.addr = sensor_ref.SENSOR_ADDR_N
+            tasks.append(task)
+            
+        '''store all tasks to taskstore_tmp'''
+        for task in tasks:
+            port = task.port
+            if taskstore_tmp.has_key(port):
+                taskgroup_tmp = taskstore_tmp[port]
             else:
-                action = 'running'     
-        else:
-            action = 'running'
-            
-        print('action : %s' % action)
-            
-        if action == 'waiting':
-            print '''push to task list'''
-            tasklist_lock.acquire()
-            tasklist.append(task)
-            tasklist_lock.release()
-                
-        elif action == 'running':
-            '''run in thread?'''
-            if taskgroup == None: 
-                taskgroup = tasks.TaskGroup(port)
-                
-            taskthread = task_scheduler.TaskThread(taskgroup, task)
-            taskthread.start()
+                taskgroup_tmp = tasks.TaskGroup(port)  
+                taskstore_tmp.add_taskgroup(port, taskgroup_tmp)
+            taskgroup_tmp.add_task(task, 'custom')
+        
+        '''iterate all taskgroup_tmp, if taskstore have waiting tasks
+        push taskgroup_tmp' cunstom_tasks list to tasklist, if don't have,
+        run the taskgroup_tmp in thread'''
+        for port in taskstore_tmp:
+            taskgroup_tmp = taskstore_tmp[port]
+            if taskstore.has_key(port):
+                taskgroup = taskstore[port]
+                if taskgroup.custom_tasks_num > 0:
+                    '''have waiting tasks, store tasks to waiting task list'''
+                    tasklist_lock.acquire()
+                    tasklist.extend(taskgroup_tmp.custom_tasks)
+                    tasklist_lock.release()
+                else:
+                    '''don't have waiting tasks, start in thread'''
+                    taskstore[port] = taskgroup_tmp
+                    tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
+                    tg_thread.start()
+            else:
+                '''don't have waiting tasks, start in thread'''
+                taskstore[port] = taskgroup_tmp
+                tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
+                tg_thread.start()
+                                                         
+        return 200
+#         port = args.pop('port')
+#         task = tasks.Task(port)
+#         taskgroup = None
+#         action = ''
+#         print 'create task'
+#         '''
+#         check if has the same task running
+#         '''        
+# 
+#         if taskstore.has_key(port):
+#             taskgroup = taskstore[port]
+#             print taskgroup.custom_tasks_num
+#             if taskgroup.custom_tasks_num > 0:
+#                 action = 'waiting'
+#             else:
+#                 action = 'running'     
+#         else:
+#             action = 'running'
+#             
+#         print('action : %s' % action)
+#             
+#         if action == 'waiting':
+#             print '''push to task list'''
+#             tasklist_lock.acquire()
+#             tasklist.append(task)
+#             tasklist_lock.release()
+#                 
+#         elif action == 'running':
+#             '''run in thread?'''
+#             if taskgroup == None: 
+#                 taskgroup = tasks.TaskGroup(port)
+#                 
+#             taskthread = task_scheduler.TaskThread(taskgroup, task)
+#             taskthread.start()
             
     def create_timer(self):
         try:
