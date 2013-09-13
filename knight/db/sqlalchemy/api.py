@@ -203,4 +203,3 @@ sensor = {'SENSORNAME_V':'sensor',
 sensor_create(sensor)   
 '''
 
-print  sensor_get(1).RECORD_ID
