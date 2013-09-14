@@ -26,22 +26,39 @@ class Task(object):
         self.group_id = None
         self.sensor_n = None
         
-    def start(self, serial):
-        serial.start_thread()
-        cmd = protocal.encode_cmd(self.cmd, self.addr)
-        serial.write(self.cmd)
-        
-        time.sleep(1)
-        
+    def exec_cmd(self, serial, cmd):
+
+        cmd_str = protocal.encode_cmd(cmd, self.addr)
+        serial.write(cmd_str)
+        time.sleep(3)
+
         self.output = serial.output
         result = protocal.decode_result(self.output)
-        DB_API.store_to_db(self.group_id, self.sensor_n, result)
         
+        return result
+            
+    def start(self, serial):
+        serial.start_thread()
         
+    def run_first_sample(self, serial):
+        self.start(serial)
+        
+        '''sample1'''
+        result = self.exec_cmd(serial, 'sample1')
+        
+        if result is not None:
+            time.sleep(200)
+            output = self.exec_cmd(serial, 'transport')
+            result = protocal.decode_result(output)
+            
+            DB_API.store_to_db(self.group_id, self.sensor_n, result)
+            
+        self.stop(serial)
+             
+    
     def stop(self, serial):
         serial.stop_thread()   
         self.output = None        
-        pass
     
     def get_result(self):
         return self.output

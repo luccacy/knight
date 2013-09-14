@@ -178,10 +178,11 @@ def get_common_values(data):
         lrc = int(data[-2:], 16)
         
     return addr,elec,inners,volts,hinners,lrc
-        
-    
-    
-def decode_result(data):
+ 
+    '''9 bytes : !0346B7\t\n 
+       55 bytes : !data\t\n
+       63 bytes : !data\t\n'''    
+def decode_result(input_data):
     '''1'''
     addr = -1 
     '''2'''
@@ -197,9 +198,15 @@ def decode_result(data):
     '''1'''
     lrc = -1
     
-    if len(data) == 104:
+    result = {}
+    data = input_data[1:-2]
+    
+    if len(data) == 6:
+        return data
+    
+    elif len(data) == 104:
             
-        return get_common_values(data)
+        addr, elec, inners, volts, hinners, lrc =  get_common_values(data)
         
     elif len(data) == 120:
         '''temprature : 8 bytes'''
@@ -217,9 +224,19 @@ def decode_result(data):
             temps.append(temp_hex)
         addr, elec, inners, volts, hinners,lrc= get_common_values(data)
         
-        return addr, elec, inners, volts, hinners, temps, lrc
     else:
         raise
+    
+    result['addr'] = addr
+    result['elec'] = elec
+    result['inners'] = inners
+    result['volts'] = volts
+    result['hinners'] = hinners
+    result['temps'] = temps
+    result['lrc'] = lrc
+    
+    return result
+    
     
     
 result = '03xxxx3B383AB23B113B5E3B383B\
@@ -245,6 +262,9 @@ idlist = ids.split(',')
 for id in idlist:
     print id
 
+test_str = '!12345\t\n'
+print test_str
+print test_str[1:-2]
 
 
 
