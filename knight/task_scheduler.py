@@ -57,15 +57,12 @@ def custum_task_scheduler():
             print('taskgroup : %s' % taskgroup)
             print('custom tasks : %s' % custom_tasks)
             for task in custom_tasks:
-                print 'start task in scheduler'
-                print task.port
-                task.start(taskgroup.serial)
-                result = task.get_result()
-                '''deal with result'''
-                print 'get result int scheduler'
-                time.sleep(10)
+                task.run_first_sample_step1(taskgroup.serial)
                 
-                task.stop(taskgroup.serial)
+            time.sleep(300)
+            
+            for task in custom_tasks:
+                task.run_first_sample_step2(taskgroup.serial)
             
             taskgroup.clear_tasks('custom')
                 
@@ -108,22 +105,16 @@ class TaskGroupThread(Thread):
         self.taskgroup.tg_lock.acquire()
         self.taskgroup.serial_open()
         
-        tasks = self.taskgroup.custom_tasks
-        for task in tasks:
-            task.start()
-            result = task.get_result()
-
-            time.sleep(10)
+        custom_tasks = self.taskgroup.custom_tasks
+        
+        for task in custom_tasks:
+            task.run_first_sample_step1(self.taskgroup.serial)
                 
-            task.stop(self.taskgroup.serial)
+        time.sleep(300)
             
-        self.task.start(self.taskgroup.serial)
+        for task in custom_tasks:
+            task.run_first_sample_step2(self.taskgroup.serial)
             
-        print 'get task result'
-        result = self.task.get_result()
-        '''deal with result'''
-            
-        self.task.stop(self.taskgroup.serial)
         self.taskgroup.serial_close()
         
         self.taskgroup.tg_lock.release()   

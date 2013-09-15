@@ -196,6 +196,20 @@ def dictbattery_get_by_id(dictbattery_id, session=None):
     
     return result
 
+def cyclesetting_get_cycle(id=1, session=None):
+    if session is None:
+        session = get_session()
+        
+    cycle_ref = model_query(models.CycleSetting, session=session).\
+                    filter_by(RECORD_ID = id).\
+                    first()
+                    
+    if not cycle_ref:
+        raise exception.SensorNotFound()
+    
+    cycle = cycle_ref.CYCLE_N
+    return cycle
+    
 '''  
 sensor = {'SENSORNAME_V':'sensor',
           'GROUPNAME_V' : 'group'}

@@ -49,7 +49,7 @@ knightservice = Target(
     cmdline_style = 'pywin32',
     )
 
-includes = ['eventlet', 'webob', 'iso8601', 'pkg_resources','knight', 'pyparsing','netaddr', 'requests','routes', 'SocketServer', 'BaseHTTPServer', 'sqlalchemy.util.queue','serial']
+includes = ['paste','apscheduler','eventlet', 'webob', 'iso8601', 'pkg_resources', 'knight', 'knight.common.http','pyparsing','netaddr', 'requests','routes', 'SocketServer', 'BaseHTTPServer', 'sqlalchemy.util.queue','serial', 'sqlalchemy.dialects.mysql', 'MySQLdb']
 
 options = {'py2exe':
            {'compressed': 1,

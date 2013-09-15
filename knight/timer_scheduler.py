@@ -34,6 +34,13 @@ def timer_task_scheduler():
             for sensor_ref in all_sensor_refs:
                 port = sensor_ref.COM_N
                 task = tasks.Task(port)
+                task.addr = sensor_ref.SENSOR_ADDR_N
+                task.sensor_n = sensor_ref.SENSOR_N
+                task.sensor_id = sensor_ref.RECORD_ID
+                task.group_id = sensor_ref.GROUPNAME_V
+                task.base_id = sensor_ref.BASENAME_V
+                task.user_id = sensor_ref.IP_V
+                task.cmd = 'sample1'
                 
                 if taskstore.has_key(port):
                     taskgroup = taskstore[port]
@@ -60,14 +67,15 @@ def timer_task_scheduler():
             taskgroup.tg_lock.acquire()
             timer_tasks = taskgroup.timer_tasks
             taskgroup.serial_open()
-            for task in timer_tasks:
-                task.start(taskgroup.serial)
-                result = task.get_result()
-                '''deal with result'''
-                
-                task.stop(taskgroup.serial)
-                taskgroup.del_task(task, 'timer')
                     
+            for task in timer_tasks:
+                task.run_first_sample_step1(taskgroup.serial)
+                
+            time.sleep(300)
+            
+            for task in timer_tasks:
+                task.run_first_sample_step2(taskgroup.serial)            
+                
             taskgroup.clear_tasks('timer')
             taskgroup.serial_close()
             
@@ -78,22 +86,30 @@ def timer_task_scheduler():
         raise    
     
 class TimerThread(Thread):   
-    def __init__(self, taskgroup, task): 
+    def __init__(self): 
         super(TimerThread, self).__init__()
     
     def run(self):
-        old_timer_id = -1
+        
+        old_cycle_n = -1
+        SCH.start()
+        
         while True:
             timer_ids = (0,1,2)
-            timer_id = 1
-            internals = (24, 24*3, 24*7)
-            interal = internals[timer_id]
+            cycle_n = DB_API.cyclesetting_get_cycle(1)
             
-            if timer_id == old_timer_id:
+            if 0 == int(cycle_n):
+                time.sleep(THREE_HOUR)
+                continue 
+            
+            internals = (24, 24*3, 24*7)
+            interal = internals[cycle_n]
+            
+            if cycle_n == old_cycle_n:
                 time.sleep(THREE_HOUR)
                 continue
             
-            old_timer_id = timer_id
+            old_cycle_n = cycle_n
             
             jobs = SCH.get_jobs()
             if len(jobs) > 0:
@@ -105,6 +121,6 @@ class TimerThread(Thread):
             run_time = ('%s 23:59:59' % cur_date)
         
             SCH.add_interval_job(timer_task_scheduler, hours=interal, start_date=run_time)
-            SCH.start()
+            
             
             time.sleep(THREE_HOUR)

@@ -206,6 +206,13 @@ class Dictbattery(BASE, DbBase):
     YELLOWVALUE_V = Column(Float)
     REDVALUE_V = Column(Float)
     
+class CycleSetting(BASE, DbBase):
+    
+    __tablename__ = 'tbl_setting'
+    
+    RECORD_ID = Column(Integer, primary_key=True)
+    CYCLE_N = Column(Integer)
+    
     
     
     

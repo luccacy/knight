@@ -17,8 +17,8 @@ class Controller(object):
                  allow_pagination=False, allow_sorting=False):
         if member_actions is None:
             member_actions = []
-        self._agent = deploy_agent.DeployAgent()
-        #self._agent = task_agent.TaskAgent()
+        #self._agent = deploy_agent.DeployAgent()
+        self._agent = task_agent.TaskAgent()
         self._collection = collection.replace('-', '_')
         self._resource = resource.replace('-', '_')
 

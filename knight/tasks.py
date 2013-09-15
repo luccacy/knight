@@ -25,6 +25,9 @@ class Task(object):
         self.serial = None
         self.group_id = None
         self.sensor_n = None
+        self.sensor_id = None
+        self.base_id = None
+        self.user_id = None
         
     def exec_cmd(self, serial, cmd):
 
@@ -51,7 +54,24 @@ class Task(object):
             output = self.exec_cmd(serial, 'transport')
             result = protocal.decode_result(output)
             
-            DB_API.store_to_db(self.group_id, self.sensor_n, result)
+            DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
+            
+        self.stop(serial)
+        
+    def run_first_sample_step1(self, serial):
+        self.start(serial)
+        
+        '''sample1'''
+        result = self.exec_cmd(serial, 'sample1')
+        
+        return result
+    
+    def run_first_sample_step2(self, serial):
+        
+        output = self.exec_cmd(serial, 'transport')
+        result = protocal.decode_result(output)
+            
+        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
             
         self.stop(serial)
              

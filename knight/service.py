@@ -4,6 +4,7 @@ import os
 import random
 import time
 from knight.paste.deploy.loadwsgi import loadapp
+#from paste import deploy
 
 import wsgi
 from knight.common import cfg
@@ -11,13 +12,14 @@ from knight.common import logger
 from threading import Thread, Event, Lock
 from knight import task_scheduler
 from knight import timer_scheduler
+from knight import router
 
 core_opts = [
     cfg.StrOpt('listen_addr', default='0.0.0.0',
                 help=('The knight server listen address')),
     cfg.StrOpt('port', default='8989',
                 help=('The knight server listen port')),
-    cfg.StrOpt('paste_file', default='/etc/knight/api-paste.ini',
+    cfg.StrOpt('paste_file', default='c://etc/knight/api-paste.ini',
                 help=('The knight server paste file')),
 ]
 
@@ -83,7 +85,7 @@ def task_loop():
 def _run_wsgi(app_name):
 
     configfile=CONF.paste_file
-    #configfile = '/etc/knight/api-paste.ini'
+    configfile = 'c://etc/knight/api-paste.ini'
     port = CONF.port
     listen_addr = CONF.listen_addr
     appname="knight"
@@ -100,13 +102,18 @@ def _run_wsgi(app_name):
     thr_timer = timer_scheduler.TimerThread()
     thr_timer.start()
  
-    app = loadapp("config:%s" % os.path.abspath(configfile), appname)
+    global_config = {'__file__': 'c:\\etc\\knight\\api-paste.ini', 'here': 'c:\\etc\\knight'}
+    local_config = {'version': '1.0.0'}
+    #app = loadapp("config:%s" % os.path.abspath(configfile), appname)
+    app = router.APIRouter.factory(global_config, **local_config)
+
+    #app = deploy.loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:
         LOG.error(('No known API applications configured.'))
         return
-    
+
     server = wsgi.Server(appname)    
     server.start(app, port, listen_addr)
-    
+    LOG.info('start server')
 
     return server

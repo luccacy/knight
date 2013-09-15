@@ -5,6 +5,10 @@ import webob.dec
 import webob.exc
 import wsgi
 import base
+
+from knight.common import logger
+
+LOG = logger.get_logger(__name__)
 RESOURCES = {'dhcp': 'dhcps',
              'kickstart': 'kickstarts',
              'pxe': 'pxes',
@@ -23,12 +27,15 @@ COLLECTION_ACTIONS = ['index', 'create']
 MEMBER_ACTIONS = ['show', 'update', 'delete']
 #REQUIREMENTS = {'id': attributes.UUID_PATTERN, 'format': 'xml|json'}
 
+
 class APIRouter(wsgi.Router):
     @classmethod
-    def factory(cls, global_config, **local_config):                                                                                 
+    def factory(cls, global_config, **local_config):    
+                                                                      
         return cls(**local_config)
 
     def __init__(self, **local_config):
+
         mapper = routes_mapper.Mapper()
         col_kwargs = dict(collection_actions=COLLECTION_ACTIONS,                                                                     
                           member_actions=MEMBER_ACTIONS)

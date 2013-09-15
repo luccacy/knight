@@ -238,7 +238,7 @@ def decode_result(input_data):
     return result
     
     
-    
+'''    
 result = '03xxxx3B383AB23B113B5E3B383B\
 11xxxxxxxx0F440F570F390F3F0F\
 530F57xxxxxxxx003AD83AC53B4B\
@@ -265,6 +265,6 @@ for id in idlist:
 test_str = '!12345\t\n'
 print test_str
 print test_str[1:-2]
-
+'''
 
 

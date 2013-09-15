@@ -40,17 +40,25 @@ class TaskController(object):
         sensor_ids = args.pop('sensor_ids')
         sensor_id_list = sensor_ids.split(',')
         taskstore_tmp = tasks.TaskStore()
-        tasks = []
+        alltasks = []
         
+        print sensor_ids
+        return 200
         '''from sensor ids to tasks'''
         for sensor_id in sensor_id_list:
             sensor_ref = DB_API.sensor_get_by_id(sensor_id)
             task = tasks.Task(sensor_ref.COM_N)
             task.addr = sensor_ref.SENSOR_ADDR_N
-            tasks.append(task)
+            task.sensor_n = sensor_ref.SENSOR_N
+            task.sensor_id = sensor_ref.RECORD_ID
+            task.group_id = sensor_ref.GROUPNAME_V
+            task.base_id = sensor_ref.BASENAME_V
+            task.user_id = sensor_ref.IP_V
+            task.cmd = 'sample1'
+            alltasks.append(task)
             
         '''store all tasks to taskstore_tmp'''
-        for task in tasks:
+        for task in alltasks:
             port = task.port
             if taskstore_tmp.has_key(port):
                 taskgroup_tmp = taskstore_tmp[port]
