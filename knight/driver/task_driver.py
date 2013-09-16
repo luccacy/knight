@@ -41,9 +41,7 @@ class TaskController(object):
         sensor_id_list = sensor_ids.split(',')
         taskstore_tmp = tasks.TaskStore()
         alltasks = []
-        
-        print sensor_ids
-        return 200
+
         '''from sensor ids to tasks'''
         for sensor_id in sensor_id_list:
             sensor_ref = DB_API.sensor_get_by_id(sensor_id)
@@ -138,7 +136,7 @@ class TaskController(object):
         
     def delete_timer(self):
         try:
-            sched.unschedule_job(timer_scheduler.timer_task_scheduler) 
+            sched.unschedule_func(timer_scheduler.timer_task_scheduler) 
             sched.shutdown(wait=False)    
         except:
             raise                                  
