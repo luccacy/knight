@@ -3,144 +3,159 @@ from knight.db.sqlalchemy import models
 import time
 
 def store_to_db(batterys_id, sensor_n, sensor_id, values):
-    elec = values['elec']
-    inners = values['inners']
-    volts = values['volts']
-    hinners = values['hinners'] 
-    tempers = values['tempers']
     
-    '''get common values'''
-    batterys_ref = api.batterys_get_by_id(batterys_id)
-    base_id = int(batterys_ref.BASE_N)
-    base_type_id = int(batterys_ref.BASE_TYPE)
-    dict_battery_id = batterys_ref.BATTERYTYPE_V
-    cur_batterytype_id = batterys_ref.BATTERYTYPE_V
-    
-    warning_ref = api.warning_get_by_id(base_type_id)
-    dict_battery_ref = api.dictbattery_get_by_id(dict_battery_id)
-    
-    '''warning values'''
-    yellow_max_red = warning_ref.YELTHRMAXRED_N
-    yellow_max_yellow = warning_ref.YELTHRMAXYEL_N
-    green_max_yellow = warning_ref.GRETHRMAXYEL_N
-    green_max_red = warning_ref.GRETHRMAXRED_N
-    
-    '''standard values'''
-    std_inner = dict_battery_ref.STDINNER_V
-    std_inner_yellow = dict_battery_ref.YELLOWVALUE_N
-    std_inner_red = dict_battery_ref.REDVALUE_N
-    
-    '''forcast factor'''
-    b0 = dict_battery_ref.B0
-    b1 = dict_battery_ref.B1
-    
-    timestamp = time.time()
-    timestruct = time.localtime(timestamp)
-    cur_date = time.strftime('%Y-%m-%d', timestruct)
-    cur_time = time.strftime('%Y-%m-%d %H:%M:%S', timestruct)
-    
-    cur_base_id = base_id
-    cur_batterys_id = batterys_id
-    
-    '''update battery table'''
-    for bt_n in len(inners):
-        if inners[bt_n] < 0 :
-            continue
+    try:
+        elec = values['elec']
+        inners = values['inners']
+        volts = values['volts']
+        hinners = values['hinners'] 
+        tempers = values['tempers']
         
-        if len(tempers) > 0:
-            cur_temper = tempers[bt_n]
-        else:
-            cur_temper = None
-        cur_hinner = hinners[bt_n]
+        '''get common values'''
+        batterys_ref = api.batterys_get_by_id(batterys_id)
+        base_id = int(batterys_ref.BASE_N)
+        base_type_id = int(batterys_ref.BASE_TYPE)
+        dict_battery_id = batterys_ref.BATTERYTYPE_V
+        cur_batterytype_id = batterys_ref.BATTERYTYPE_V
         
-        battery_serial_n = (sensor_n*8 + bt_n)
-        cur_serial_n = battery_serial_n
+        warning_ref = api.warning_get_by_id(base_type_id)
+        dict_battery_ref = api.dictbattery_get_by_id(dict_battery_id)
         
-        cur_inner = inners[bt_n]
-        cur_volt = volts[bt_n]
-        cur_forcast = float(b0) + float(b1)*float(cur_inner)
+        '''warning values'''
+        yellow_max_red = warning_ref.YELTHRMAXRED_N
+        yellow_max_yellow = warning_ref.YELTHRMAXYEL_N
+        green_max_yellow = warning_ref.GRETHRMAXYEL_N
+        green_max_red = warning_ref.GRETHRMAXRED_N
         
-        if cur_inner <= std_inner_yellow:
-            cur_status = 0
-        elif cur_inner <= std_inner_red:
-            cur_status = 1
-        else:
-            cur_status = 2
-    
-        battery_values = {'BASE_N' : cur_base_id,
-                      'GROUP_V' : cur_batterys_id,
-                      'SERIAL_N' : cur_serial_n, 
-                      'BATTERYTYPE_V' : cur_batterytype_id,
-                      'CURDATE_D' : cur_time,
-                      'STATUS_N' : cur_status,
-                      'CURVAL_N' : cur_volt,
-                      'CURINNER_N' : cur_inner,
-                      'CUR_HL_INNER_N' : cur_hinner,
-                      'CUR_TEMPERATURE_N' : cur_temper,
-                      'FORCASTVOLUME_N' : cur_forcast,
-                      }
-        battery_ref = api.battery_get_by_groupid_and_serialnum(cur_batterys_id, cur_serial_n)
-        if not battery_ref:
-            battery_ref = api.battery_create(battery_values)
-        else:
-            api.battery_update(cur_batterys_id, cur_serial_n, battery_values)
+        '''standard values'''
+        std_inner = dict_battery_ref.STDINNER_V
+        std_inner_yellow = dict_battery_ref.YELLOWVALUE_N
+        std_inner_red = dict_battery_ref.REDVALUE_N
+        
+        '''forcast factor'''
+        b0 = dict_battery_ref.B0
+        b1 = dict_battery_ref.B1
+        
+        timestamp = time.time()
+        timestruct = time.localtime(timestamp)
+        cur_date = time.strftime('%Y-%m-%d', timestruct)
+        cur_time = time.strftime('%Y-%m-%d %H:%M:%S', timestruct)
+        
+        cur_base_id = base_id
+        cur_batterys_id = batterys_id
+        
+        '''update battery table'''
+        for bt_n in len(inners):
+            if inners[bt_n] < 0 :
+                continue
             
-        '''create btrundata'''
-        btrundata_values = {'BTKEY_V' : cur_batterys_id,
-                            'BASE_N' : cur_base_id,
-                            'BTTYPEKEY_V' : cur_batterytype_id,
-                            'RUNTIME_D': cur_time,
-                            'STATUS_N' : cur_status,
-                            'VOL_N' : cur_volt,
-                            'INTER_N' : cur_inner,
-                            'FORCASTVOLUME_N' : cur_forcast,
-                            'CUR_HL_INNER_N' : cur_hinner,
-                            'CUR_TEMPERATURE_N' : cur_temper,
-                            'BTSERIALNO_V' : cur_serial_n,
-                            }
-        btrundata_ref = api.btrundata_create(btrundata_values)
+            if len(tempers) > 0:
+                cur_temper = tempers[bt_n]
+            else:
+                cur_temper = None
+            cur_hinner = hinners[bt_n]
+            
+            battery_serial_n = (sensor_n*8 + bt_n)
+            cur_serial_n = battery_serial_n
+            
+            cur_inner = inners[bt_n]
+            cur_volt = volts[bt_n]
+            cur_forcast = float(b0) + float(b1)*float(cur_inner)
+            
+            if cur_inner <= std_inner_yellow:
+                cur_status = 0
+            elif cur_inner <= std_inner_red:
+                cur_status = 1
+            else:
+                cur_status = 2
         
-        '''create pickdata'''
-        pickdata_values = {'USER_ID' : '',
-                           'BTKEY_V' : cur_batterys_id,
-                           'BASENAME_V' : cur_base_id,
-                           'SENSORNAME_V' : sensor_id,
-                           'SENSOR_N' : sensor_n,
-                           'BATTERY_N' : cur_serial_n,
-                           'PICKEDTIME_D' : cur_time,
-                           'VOL_N' : cur_volt,
-                           'ELEC_N' : elec,
-                           'INTER_N' : cur_inner,
-                           'TEMPER_N' : cur_temper,
-                           'HINTER' : cur_hinner,
-                           'STATUS_V': cur_status,
+            battery_values = {'BASE_N' : cur_base_id,
+                          'GROUP_V' : cur_batterys_id,
+                          'SERIAL_N' : cur_serial_n, 
+                          'BATTERYTYPE_V' : cur_batterytype_id,
+                          'CURDATE_D' : cur_time,
+                          'STATUS_N' : cur_status,
+                          'CURVAL_N' : cur_volt,
+                          'CURINNER_N' : cur_inner,
+                          'CUR_HL_INNER_N' : cur_hinner,
+                          'CUR_TEMPERATURE_N' : cur_temper,
+                          'FORCASTVOLUME_N' : cur_forcast,
+                          }
+            battery_ref = api.battery_get_by_groupid_and_serialnum(cur_batterys_id, cur_serial_n)
+            if not battery_ref:
+                battery_ref = api.battery_create(battery_values)
+            else:
+                api.battery_update(cur_batterys_id, cur_serial_n, battery_values)
+                
+            '''create btrundata'''
+            btrundata_values = {'BTKEY_V' : cur_batterys_id,
+                                'BASE_N' : cur_base_id,
+                                'BTTYPEKEY_V' : cur_batterytype_id,
+                                'RUNTIME_D': cur_time,
+                                'STATUS_N' : cur_status,
+                                'VOL_N' : cur_volt,
+                                'INTER_N' : cur_inner,
+                                'FORCASTVOLUME_N' : cur_forcast,
+                                'CUR_HL_INNER_N' : cur_hinner,
+                                'CUR_TEMPERATURE_N' : cur_temper,
+                                'BTSERIALNO_V' : cur_serial_n,
+                                }
+            btrundata_ref = api.btrundata_create(btrundata_values)
+            
+            '''create pickdata'''
+            pickdata_values = {'USER_ID' : '',
+                               'BTKEY_V' : cur_batterys_id,
+                               'BASENAME_V' : cur_base_id,
+                               'SENSORNAME_V' : sensor_id,
+                               'SENSOR_N' : sensor_n,
+                               'BATTERY_N' : cur_serial_n,
+                               'PICKEDTIME_D' : cur_time,
+                               'VOL_N' : cur_volt,
+                               'ELEC_N' : elec,
+                               'INTER_N' : cur_inner,
+                               'TEMPER_N' : cur_temper,
+                               'HINTER' : cur_hinner,
+                               'STATUS_V': cur_status,
+                               }
+            
+            pickdata_ref = api.pickdata_create(pickdata_values)
+            
+        '''update batterys table'''
+        sum_green = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 0)
+        sum_yellow = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 1)
+        sum_red = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 2)
+        
+        if sum_red > yellow_max_red or sum_yellow > yellow_max_yellow or (sum_red+sum_yellow) > yellow_max_yellow:
+            batterys_status = 2
+        elif sum_yellow > green_max_yellow or sum_red > green_max_red or (sum_red+sum_yellow) > green_max_yellow:
+            batterys_status = 1
+        else:
+            batterys_status = 0
+        
+        '''update batterys values'''
+        batterys_values = {'RECORD_ID' : cur_batterys_id,
+                           'GREEN' : sum_green,
+                           'YELLOW' : sum_yellow,
+                           'RED' : sum_red,
+                           'STATUS_N' : batterys_status,
                            }
         
-        pickdata_ref = api.pickdata_create(pickdata_values)
+        api.batterys_update(cur_batterys_id, batterys_values)
         
-    '''update batterys table'''
-    sum_green = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 0)
-    sum_yellow = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 1)
-    sum_red = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 2)
+    except:
+        raise
     
-    if sum_red > yellow_max_red or sum_yellow > yellow_max_yellow or (sum_red+sum_yellow) > yellow_max_yellow:
-        batterys_status = 2
-    elif sum_yellow > green_max_yellow or sum_red > green_max_red or (sum_red+sum_yellow) > green_max_yellow:
-        batterys_status = 1
-    else:
-        batterys_status = 0
+def delete_records_over_one_week_day():
     
-    '''update batterys values'''
-    batterys_values = {'RECORD_ID' : cur_batterys_id,
-                       'GREEN' : sum_green,
-                       'YELLOW' : sum_yellow,
-                       'RED' : sum_red,
-                       'STATUS_N' : batterys_status,
-                       }
+    try:
+        timestamp = time.time() - 24*60*60*7
+        timestruct = time.localtime(timestamp)
+        one_day_before = time.strftime('%Y-%m-%d', timestruct)
+        
+        api.pickdata_delete_by_time(one_day_before)
     
-    api.batterys_update(cur_batterys_id, batterys_values)
-    
-    
+    except:
+        raise
     
 
     

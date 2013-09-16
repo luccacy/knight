@@ -29,6 +29,9 @@ def timer_task_scheduler():
     
     '''get all task from sensor tables'''
     try:
+        '''clean records over one week'''
+        DB_API.delete_records_over_one_week_day()
+        
         all_sensor_refs = DB_API.sensor_get_all()
         if not all_sensor_refs:
             for sensor_ref in all_sensor_refs:
@@ -95,7 +98,7 @@ class TimerThread(Thread):
         SCH.start()
         
         while True:
-            timer_ids = (0,1,2)
+
             cycle_n = DB_API.cyclesetting_get_cycle(1)
             
             if 0 == int(cycle_n):

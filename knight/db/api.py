@@ -21,3 +21,6 @@ def cyclesetting_get_cycle(id=1):
 
 def store_to_db(batterys_id, sensor_n, values):
     return store.store_to_db(batterys_id, sensor_n, values)
+
+def delete_records_over_one_week_day():
+    return store.delete_records_over_one_week_day()

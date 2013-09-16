@@ -42,6 +42,16 @@ def sensor_get_all(session=None):
     query = model_query(models.Sensor, session)
     query.all()
     
+def pickdata_delete_by_time(time, session):
+    if session is None:
+        session = get_session()
+        
+    pickdata_refs = model_query(models.Pickdata, session=session).\
+                    filter_by(models.Pickdata.PICKEDTIME_D < time).\
+                    all()
+    for pickdata_ref in pickdata_refs:
+        session.delete(pickdata_ref)
+        session.flush()
 
 def pickdata_create(values, session=None):
     pickdata_ref = models.Pickdata()
