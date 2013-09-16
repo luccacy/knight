@@ -21,7 +21,7 @@ class Task(object):
         self.addr = None
         self.cmd = None
         self.output = None
-        self.status = 'running'
+        self.status = 'ok'
         self.serial = None
         self.group_id = None
         self.sensor_n = None
@@ -31,14 +31,14 @@ class Task(object):
         
     def exec_cmd(self, serial, cmd):
 
-        cmd_str = protocal.encode_cmd(cmd, self.addr)
+        cmd_str, recv_str = protocal.encode_cmd(cmd, self.addr)
         serial.write(cmd_str)
         time.sleep(3)
 
         self.output = serial.output
-        result = protocal.decode_result(self.output)
+        result_dict = protocal.decode_result(self.output)
         
-        return result
+        return result_dict, recv_str
             
     def start(self, serial):
         serial.start_thread()
@@ -60,21 +60,39 @@ class Task(object):
         
     def run_first_sample_step1(self, serial):
         self.start(serial)
-        
+        run_times = 0
         '''sample1'''
-        result = self.exec_cmd(serial, 'sample1')
+        while True:
+            result_dict, right_result_str = self.exec_cmd(serial, 'sample1')
+            result_data = result_dict['data']
+            run_times += 1
+            if result_data == right_result_str :
+                break
+            elif result_data != right_result_str and run_times == 3:
+                self.status = 'sample1_failed'
+                break
+            else:
+                time.sleep(1)
         
-        return result
+        return result_data
     
     def run_first_sample_step2(self, serial):
-        
-        output = self.exec_cmd(serial, 'transport')
-        result = protocal.decode_result(output)
-            
-        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
-            
+        run_times = 0
+        while True:
+            run_times += 1
+            result_dict,null_str = self.exec_cmd(serial, 'transport')
+            if result_dict['status'] == 0:
+                break
+            elif result_dict['status'] != 0 and run_times == 3:
+                self.status = 'transport_failed'
+                break
+            else:
+                time.sleep(1)
+                       
+        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict)
+
         self.stop(serial)
-             
+
     
     def stop(self, serial):
         serial.stop_thread()   

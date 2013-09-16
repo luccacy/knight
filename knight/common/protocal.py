@@ -23,7 +23,10 @@ def encode_cmd(cmd, addr=None):
     CR = 0x0d
     LF = 0x0a
     send_flag = 0x3a
+    recv_flag = 0x21
     cmd_str = ''
+    recv_str = ''
+    
     
     addr_high,addr_low = split_hex(addr)
     
@@ -41,8 +44,10 @@ def encode_cmd(cmd, addr=None):
         lrc = (((~sum) + 1) & 0xFF)
         lrc_high,lrc_low = split_hex(lrc)
         
-        cmd_code = (send_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
+        cmd_code = (send_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)
+        recv_code = (recv_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
         cmd_str = ''.join([chr(x) for x in cmd_code])
+        recv_str = ''.join([chr(x) for x in recv_code])
         
     elif cmd == 'sample2':
         
@@ -56,7 +61,9 @@ def encode_cmd(cmd, addr=None):
         lrc_high,lrc_low = split_hex(lrc)
         
         cmd_code = (send_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
+        recv_code = (recv_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
         cmd_str = ''.join([chr(x) for x in cmd_code])
+        recv_str = ''.join([chr(x) for x in recv_code])
         
     elif cmd == 'transport':
         
@@ -70,7 +77,9 @@ def encode_cmd(cmd, addr=None):
         lrc_high,lrc_low = split_hex(lrc)
         
         cmd_code = (send_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
+              
         cmd_str = ''.join([chr(x) for x in cmd_code])
+        
         
     elif cmd == 'ext_life':
         sample1_code = 0x64
@@ -83,13 +92,15 @@ def encode_cmd(cmd, addr=None):
         lrc_high,lrc_low = split_hex(lrc)
         
         cmd_code = (send_flag, addr_high, addr_low, sample1_high, sample1_low, lrc_high, lrc_low, CR, LF)      
-        cmd_str = ''.join([chr(x) for x in cmd_code])    
+              
+        cmd_str = ''.join([chr(x) for x in cmd_code])
+            
     else:
         raise
     
     print('cmd_str : %s' % (cmd_str))
     
-    return cmd_str
+    return cmd_str, recv_str
 
 
 
@@ -198,11 +209,22 @@ def decode_result(input_data):
     '''1'''
     lrc = -1
     
+    status = -1
+    
     result = {}
+    
+    if len(input_data) < 9:
+        status = -1
+        result['status'] = status  
+        result['data'] =  '-1' 
+        return result
+         
     data = input_data[1:-2]
     
-    if len(data) == 6:
-        return data
+    if len(data) == 6:  
+        result['status'] = status
+        result['data'] =  input_data 
+        return result
     
     elif len(data) == 104:
             
@@ -227,6 +249,7 @@ def decode_result(input_data):
     else:
         raise
     
+    status = 0
     result['addr'] = addr
     result['elec'] = elec
     result['inners'] = inners
@@ -234,6 +257,9 @@ def decode_result(input_data):
     result['hinners'] = hinners
     result['temps'] = temps
     result['lrc'] = lrc
+    result['status'] = status
+    result['data'] =  '0' 
+
     
     return result
     
