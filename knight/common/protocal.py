@@ -195,7 +195,7 @@ def get_common_values(data):
         '''lrc : 1 bytes'''
         print '===========lrc'
         print data[-2:]
-        lrc = convert_to_decimal(data[-2:])
+        lrc = int(data[-2:],16)
         
     return addr,elec,inners,volts,hinners,lrc
  
