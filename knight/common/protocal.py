@@ -102,7 +102,16 @@ def encode_cmd(cmd, addr=None):
     
     return cmd_str, recv_str
 
-
+def convert_to_decimal(data_str):
+    if len(str) != 4:
+        return 
+    
+    high = data_str[0:2]
+    low = data_str[2:4]
+    
+    value = int(high, 16)*256 + int(low, 16)
+    return value
+     
 
 #cmd_str = encode_cmd('sample1', addr=0x03)
 '''get all values except temperature'''
@@ -129,9 +138,9 @@ def get_common_values(data):
         addr = int(data[0:2], 16)
         
         '''elec : 2 byte'''
-        elec_str = data[2:7]
+        elec_str = data[2:6]
         if 'xx' not in elec_str:
-            elec = int('elec_str', 16)
+            elec = convert_to_decimal(elec_str)
         else:
             elec = -1
         
@@ -147,7 +156,7 @@ def get_common_values(data):
         for inner_str in inner_strs:
             print inner_str
             if 'xx' not in inner_str:
-                inner_hex = int(inner_str, 16)
+                inner_hex = convert_to_decimal(inner_str)
             else:
                 inner_hex = -1
             inners.append(inner_hex)
@@ -163,7 +172,7 @@ def get_common_values(data):
         for volt_str in volt_strs:
             print volt_str
             if 'xx' not in volt_str:
-                volt_hex = int(volt_str, 16)
+                volt_hex = convert_to_decimal(volt_str)
             else:
                 volt_hex = -1
             volts.append(volt_hex)
@@ -178,7 +187,7 @@ def get_common_values(data):
         for hinner_str in hinner_strs:
             print hinner_str
             if 'xx' not in hinner_str:
-                hinner_hex = int(hinner_str, 16)
+                hinner_hex = convert_to_decimal(hinner_str)
             else:
                 hinner_hex = -1
             hinners.append(hinner_hex)
@@ -186,7 +195,7 @@ def get_common_values(data):
         '''lrc : 1 bytes'''
         print '===========lrc'
         print data[-2:]
-        lrc = int(data[-2:], 16)
+        lrc = convert_to_decimal(data[-2:])
         
     return addr,elec,inners,volts,hinners,lrc
  
