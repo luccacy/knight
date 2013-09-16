@@ -113,7 +113,7 @@ class TimerThread(Thread):
             
             jobs = SCH.get_jobs()
             if len(jobs) > 0:
-                SCH.unschedule_job(timer_task_scheduler)
+                SCH.unschedule_func(timer_task_scheduler)
                          
             timestamp = time.time()
             timestruct = time.localtime(timestamp)
