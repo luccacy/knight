@@ -80,12 +80,12 @@ class TaskController(object):
                     tasklist.extend(taskgroup_tmp.custom_tasks)
                     tasklist_lock.release()
                 else:
-                    '''don't have waiting tasks, start in thread'''
+                    '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
                     taskstore[port] = taskgroup_tmp
                     tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
                     tg_thread.start()
             else:
-                '''don't have waiting tasks, start in thread'''
+                '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
                 taskstore[port] = taskgroup_tmp
                 tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
                 tg_thread.start()

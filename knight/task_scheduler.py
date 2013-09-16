@@ -37,7 +37,7 @@ def custum_task_scheduler():
                 taskstore_lock.acquire()
                 taskstore_instance.add_taskgroup(port,taskgroup)
                 taskstore_lock.release()
-        del tasklist[:]
+        tasklist = []
         tasklist_lock.release()    
                 
         print 'start all custom tasks in scheduler'
