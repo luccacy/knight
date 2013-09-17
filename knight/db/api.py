@@ -19,8 +19,8 @@ def sensor_get_by_id(sensor_id):
 def cyclesetting_get_cycle(id=1):
     return IMPL.cyclesetting_get_cycle(id)
 
-def store_to_db(batterys_id, sensor_n, values):
-    return store.store_to_db(batterys_id, sensor_n, values)
+def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
+    return store.store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status)
 
 def delete_records_over_one_week_day():
     return store.delete_records_over_one_week_day()

@@ -89,7 +89,7 @@ class Task(object):
             else:
                 time.sleep(1)
                        
-        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict)
+        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
 
         self.stop(serial)
 
