@@ -78,16 +78,20 @@ class Task(object):
     
     def run_first_sample_step2(self, serial):
         run_times = 0
-        while True:
-            run_times += 1
-            result_dict,null_str = self.exec_cmd(serial, 'transport')
-            if result_dict['status'] == 0:
-                break
-            elif result_dict['status'] != 0 and run_times == 3:
-                self.status = 'transport_failed'
-                break
-            else:
-                time.sleep(1)
+        
+        if self.status.find('failed') >= 0:
+            self.status = 'failed'
+        else:
+            while True:
+                run_times += 1
+                result_dict,null_str = self.exec_cmd(serial, 'transport')
+                if result_dict['status'] == 0:
+                    break
+                elif result_dict['status'] != 0 and run_times == 3:
+                    self.status = 'transport_failed'
+                    break
+                else:
+                    time.sleep(1)
                        
         DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
 
