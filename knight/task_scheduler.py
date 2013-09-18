@@ -13,13 +13,14 @@ TEN_MINUTE=10*60
 taskstore = tasks.TS.task_store
 taskstore_instance = tasks.TS
 taskstore_lock = tasks.TS_LOCK
-tasklist = tasks.TL
-tasklist_lock = tasks.TL_LOCK
+
 
 '''run in thread'''
 def custum_task_scheduler():
     while True:
         '''add all task in tasklist to taskstore'''
+        tasklist = tasks.TL
+        tasklist_lock = tasks.TL_LOCK
         tasklist_lock.acquire()
         if len(tasklist) > 0 :
             print 'push tasklist to taskstore'
@@ -37,9 +38,9 @@ def custum_task_scheduler():
                 taskstore_lock.acquire()
                 taskstore_instance.add_taskgroup(port,taskgroup)
                 taskstore_lock.release()
-        tasklist = []
+        tasks.TL = []
         tasklist_lock.release()    
-                
+        
         print 'start all custom tasks in scheduler'
         '''start all custom tasks in taskstore'''
         print('taskstore : %s' % taskstore)
@@ -48,23 +49,31 @@ def custum_task_scheduler():
             taskgroup = taskstore[group]
             port = taskgroup.port
             
+            
             if taskgroup.custom_tasks_num <= 0 :
                 continue
-                
+            
+            print('=======lock: %d' % taskgroup.custom_tasks_num)
             taskgroup.tg_lock.acquire()
+            print('=======lock after')
+            
             custom_tasks = taskgroup.custom_tasks
             taskgroup.serial_open()
-            print('taskgroup : %s' % taskgroup)
-            print('custom tasks : %s' % custom_tasks)
+            print('=======taskgroup : %s' % taskgroup)
+            print('=======custom tasks num : %d' % taskgroup.custom_tasks_num)
             for task in custom_tasks:
+                print('=======run sample1: %d' % taskgroup.custom_tasks_num)
                 task.run_first_sample_step1(taskgroup.serial)
                 
-            time.sleep(300)
+            time.sleep(1)
             
             for task in custom_tasks:
+                print('=======run sample2: %d' % taskgroup.custom_tasks_num)
                 task.run_first_sample_step2(taskgroup.serial)
             
+            print('clear taskgroup : %s' % (taskgroup.port))
             taskgroup.clear_tasks('custom')
+            print('taskgroup num  : %d' % (taskgroup.custom_tasks_num))
                 
             taskgroup.serial_close()
             taskgroup.tg_lock.release()
@@ -110,14 +119,17 @@ class TaskGroupThread(Thread):
         for task in custom_tasks:
             task.run_first_sample_step1(self.taskgroup.serial)
                 
-        time.sleep(300)
+        time.sleep(10)
             
         for task in custom_tasks:
             task.run_first_sample_step2(self.taskgroup.serial)
             
+        self.taskgroup.clear_tasks('custom')
+          
         self.taskgroup.serial_close()
         
-        self.taskgroup.tg_lock.release()   
+        self.taskgroup.tg_lock.release()
+        print '=================taskgroupthread release lock'   
                            
                 
             
