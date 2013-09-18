@@ -12,8 +12,7 @@ from knight.db import api as DB_API
 taskstore = tasks.TS.task_store
 taskstore_instance = tasks.TS
 taskstore_lock = tasks.TS_LOCK
-tasklist = tasks.TL
-tasklist_lock = tasks.TL_LOCK
+
 
 sched = timer_scheduler.SCH
 
@@ -39,20 +38,23 @@ class TaskController(object):
         
         sensor_ids = args.pop('sensor_ids')
         sensor_id_list = sensor_ids.split(',')
-        taskstore_tmp = tasks.TaskStore()
+        taskstore_inst_tmp = tasks.TaskStore()
+        taskstore_tmp = taskstore_inst_tmp.task_store
         alltasks = []
 
         '''from sensor ids to tasks'''
         for sensor_id in sensor_id_list:
-            sensor_ref = DB_API.sensor_get_by_id(sensor_id)
-            task = tasks.Task(sensor_ref.COM_N)
-            task.addr = sensor_ref.SENSOR_ADDR_N
-            task.sensor_n = sensor_ref.SENSOR_N
-            task.sensor_id = sensor_ref.RECORD_ID
-            task.group_id = sensor_ref.GROUPNAME_V
-            task.base_id = sensor_ref.BASENAME_V
-            task.user_id = sensor_ref.IP_V
+            task = tasks.Task(sensor_id)
+#             sensor_ref = DB_API.sensor_get_by_id(sensor_id)
+#             task = tasks.Task(sensor_ref.COM_N)
+#             task.addr = sensor_ref.SENSOR_ADDR_N
+#             task.sensor_n = sensor_ref.SENSOR_N
+#             task.sensor_id = sensor_ref.RECORD_ID
+#             task.group_id = sensor_ref.GROUPNAME_V
+#             task.base_id = sensor_ref.BASENAME_V
+#             task.user_id = sensor_ref.IP_V
             task.cmd = 'sample1'
+            task.addr = int(sensor_id)
             alltasks.append(task)
             
         '''store all tasks to taskstore_tmp'''
@@ -62,33 +64,46 @@ class TaskController(object):
                 taskgroup_tmp = taskstore_tmp[port]
             else:
                 taskgroup_tmp = tasks.TaskGroup(port)  
-                taskstore_tmp.add_taskgroup(port, taskgroup_tmp)
+                taskstore_inst_tmp.add_taskgroup(port, taskgroup_tmp)
             taskgroup_tmp.add_task(task, 'custom')
         
         '''iterate all taskgroup_tmp, if taskstore have waiting tasks
         push taskgroup_tmp' cunstom_tasks list to tasklist, if don't have,
         run the taskgroup_tmp in thread'''
+#         for port in taskstore_tmp:
+#             taskgroup_tmp = taskstore_tmp[port]
+#             if taskstore.has_key(port):
+#                 taskgroup = taskstore[port]
+#                 if taskgroup.custom_tasks_num > 0:
+#                     tasklist = tasks.TL
+#                     tasklist_lock = tasks.TL_LOCK
+#                     '''have waiting tasks, store tasks to waiting task list'''
+#                     print '========push to tasklist============'
+#                     tasklist_lock.acquire()
+#                     tasklist.extend(taskgroup_tmp.custom_tasks)
+#                     tasklist_lock.release()
+#                 else:
+#                     '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
+#                     taskstore[port] = taskgroup_tmp
+#                     tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
+#                     tg_thread.start()
+#             else:
+#                 '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
+#                 taskstore[port] = taskgroup_tmp
+#                 tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
+#                 tg_thread.start()
+
         for port in taskstore_tmp:
             taskgroup_tmp = taskstore_tmp[port]
-            if taskstore.has_key(port):
-                taskgroup = taskstore[port]
-                if taskgroup.custom_tasks_num > 0:
-                    '''have waiting tasks, store tasks to waiting task list'''
-                    tasklist_lock.acquire()
-                    tasklist.extend(taskgroup_tmp.custom_tasks)
-                    tasklist_lock.release()
-                else:
-                    '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
-                    taskstore[port] = taskgroup_tmp
-                    tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
-                    tg_thread.start()
-            else:
-                '''don't have waiting tasks, push to taskstore to share lock,and start in thread'''
-                taskstore[port] = taskgroup_tmp
-                tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
-                tg_thread.start()
+            
+            if taskgroup_tmp.custom_tasks_num > 0:
+                tasklist = tasks.TL
+                tasklist_lock = tasks.TL_LOCK
+                tasklist_lock.acquire()
+                tasklist.extend(taskgroup_tmp.custom_tasks)
+                tasklist_lock.release()
                                                          
-        return 200
+        return {'status': 'ok'}
 #         port = args.pop('port')
 #         task = tasks.Task(port)
 #         taskgroup = None

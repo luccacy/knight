@@ -9,8 +9,9 @@ a task group by serial port
 '''
 from threading import Thread, Lock
 from knight.common import serialutils 
+from knight.common import serial_agent 
 from knight.common import protocal
-from knight.db import api as DB_API
+#from knight.db import api as DB_API
 
 import time
 
@@ -36,6 +37,7 @@ class Task(object):
         time.sleep(3)
 
         self.output = serial.output
+        print('output : %s' % self.output)
         result_dict = protocal.decode_result(self.output)
         
         return result_dict, recv_str
@@ -54,13 +56,14 @@ class Task(object):
             output = self.exec_cmd(serial, 'transport')
             result = protocal.decode_result(output)
             
-            DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
+#             DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
             
         self.stop(serial)
         
     def run_first_sample_step1(self, serial):
         self.start(serial)
         run_times = 0
+        print 'run sample1'
         '''sample1'''
         while True:
             result_dict, right_result_str = self.exec_cmd(serial, 'sample1')
@@ -74,11 +77,14 @@ class Task(object):
             else:
                 time.sleep(1)
         
+        print('sample1 result: %s' % result_data)
         return result_data
     
     def run_first_sample_step2(self, serial):
         run_times = 0
+        result_dict = {}
         
+        print 'run transport'
         if self.status.find('failed') >= 0:
             self.status = 'failed'
         else:
@@ -92,8 +98,9 @@ class Task(object):
                     break
                 else:
                     time.sleep(1)
-                       
-        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
+        
+        print('transport result : %s' % result_dict)      
+#         DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
 
         self.stop(serial)
 
@@ -150,14 +157,13 @@ class TaskGroup(object):
         task.start(self.serial)
             
     def serial_open(self):
-#         self.serial = serialutils.SerialControl(5)
-#         self.serial.open()
-#         return self.serial     
-        pass
+        self.serial = serial_agent.SerialAgent(5)
+        self.serial.open()
+        return self.serial     
+        
     def serial_close(self):
-#         self.serial.close()
-#         self.status = 'finished'
-        pass
+        self.serial.close()
+        self.status = 'finished'     
         
     def set_port_status(self, status):
         '''True : busy, False : idle'''

@@ -18,11 +18,6 @@ tasklist = tasks.TL
 tasklist_lock = tasks.TL_LOCK
 
 SCH = Scheduler(daemonic = False)
-jobs = SCH.get_jobs()
-if jobs is None:
-    print 'no job'
-else:
-    print 'have job'
 
 '''scheduler by apscheduler'''
 def timer_task_scheduler():

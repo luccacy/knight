@@ -76,11 +76,6 @@ def serve_wsgi(cls):
     service.start()
         
     return service
-        
-def task_loop():
-    while True:
-        LOG.error('task loop')
-        time.sleep(2)
     
 def _run_wsgi(app_name):
 
@@ -95,19 +90,17 @@ def _run_wsgi(app_name):
     '''
     thr_custom = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
     thr_custom.start()
-    
+     
     '''
     start timer scheduler thread
     '''
-    thr_timer = timer_scheduler.TimerThread()
-    thr_timer.start()
+#     thr_timer = timer_scheduler.TimerThread()
+#     thr_timer.start()
  
     global_config = {'__file__': 'c:\\etc\\knight\\api-paste.ini', 'here': 'c:\\etc\\knight'}
     local_config = {'version': '1.0.0'}
-    #app = loadapp("config:%s" % os.path.abspath(configfile), appname)
     app = router.APIRouter.factory(global_config, **local_config)
 
-    #app = deploy.loadapp("config:%s" % os.path.abspath(configfile), appname)
     if not app:
         LOG.error(('No known API applications configured.'))
         return

@@ -31,13 +31,13 @@ def encode_cmd(cmd, addr=None):
     addr_high,addr_low = split_hex(addr)
     
     if cmd == 'sample1':
-#         sample1_code = 0x61
-#         sample1_high = 0x36
-#         sample1_low = 0x31
+        sample1_code = 0x61
+        sample1_high = 0x36
+        sample1_low = 0x31
         
-        sample1_code = 0x46
-        sample1_high = 0x34
-        sample1_low = 0x36
+#         sample1_code = 0x46
+#         sample1_high = 0x34
+#         sample1_low = 0x36
         
         sum = addr + sample1_code#0x61
         
@@ -98,12 +98,10 @@ def encode_cmd(cmd, addr=None):
     else:
         raise
     
-    print('cmd_str : %s' % (cmd_str))
-    
     return cmd_str, recv_str
 
 def convert_to_decimal(data_str):
-    if len(str) != 4:
+    if len(data_str) != 4:
         return 
     
     high = data_str[0:2]
@@ -152,9 +150,9 @@ def get_common_values(data):
             inner_strs.append( data[start:start+4] )
             start += 4
         
-        print '=========inner:'
+        
         for inner_str in inner_strs:
-            print inner_str
+            
             if 'xx' not in inner_str:
                 inner_hex = convert_to_decimal(inner_str)
             else:
@@ -164,13 +162,13 @@ def get_common_values(data):
         '''voltage : 16 bytes'''
         start = 38
         volt_strs = []
-        print '==========volt'
+        
         for i in range(8):
             volt_strs.append( data[start:start+4] )
             start += 4
             
         for volt_str in volt_strs:
-            print volt_str
+           
             if 'xx' not in volt_str:
                 volt_hex = convert_to_decimal(volt_str)
             else:
@@ -183,9 +181,9 @@ def get_common_values(data):
         for i in range(8):
             hinner_strs.append( data[start:start+4] )
             start += 4
-        print '==========hinner'
+        
         for hinner_str in hinner_strs:
-            print hinner_str
+            
             if 'xx' not in hinner_str:
                 hinner_hex = convert_to_decimal(hinner_str)
             else:
@@ -193,8 +191,7 @@ def get_common_values(data):
             hinners.append(hinner_hex)
                    
         '''lrc : 1 bytes'''
-        print '===========lrc'
-        print data[-2:]
+
         lrc = int(data[-2:],16)
         
     return addr,elec,inners,volts,hinners,lrc
@@ -222,6 +219,7 @@ def decode_result(input_data):
     
     result = {}
     
+    print('input_data : %s, len : %d' % (input_data, len(input_data)))
     if len(input_data) < 9:
         status = -1
         result['status'] = status  
@@ -273,6 +271,10 @@ def decode_result(input_data):
     return result
     
     
+# cmd_str, recv_str = encode_cmd('sample1', 3)
+# print cmd_str
+# print hex(ord(cmd_str[4]))
+# print recv_str
 '''    
 result = '03xxxx3B383AB23B113B5E3B383B\
 11xxxxxxxx0F440F570F390F3F0F\

@@ -2,9 +2,10 @@ from knight.db.sqlalchemy import api
 from knight.db.sqlalchemy import models
 import time
 
-def store_to_db(batterys_id, sensor_n, sensor_id, values):
+def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
     
     try:
+        
         elec = values['elec']
         inners = values['inners']
         volts = values['volts']
@@ -49,25 +50,36 @@ def store_to_db(batterys_id, sensor_n, sensor_id, values):
             if inners[bt_n] < 0 :
                 continue
             
-            if len(tempers) > 0:
-                cur_temper = tempers[bt_n]
-            else:
-                cur_temper = None
-            cur_hinner = hinners[bt_n]
-            
             battery_serial_n = (sensor_n*8 + bt_n)
             cur_serial_n = battery_serial_n
             
-            cur_inner = inners[bt_n]
-            cur_volt = volts[bt_n]
-            cur_forcast = float(b0) + float(b1)*float(cur_inner)
-            
-            if cur_inner <= std_inner_yellow:
-                cur_status = 0
-            elif cur_inner <= std_inner_red:
-                cur_status = 1
+            if status != 'failed':
+                
+                if len(tempers) > 0:
+                    cur_temper = tempers[bt_n]
+                else:
+                    cur_temper = None
+                cur_hinner = hinners[bt_n]               
+                cur_inner = inners[bt_n]
+                cur_volt = volts[bt_n]
+                cur_forcast = float(b0) + float(b1)*float(cur_inner)
+                
+                if cur_inner <= std_inner_yellow:
+                    cur_status = 0
+                elif cur_inner <= std_inner_red:
+                    cur_status = 1
+                else:
+                    cur_status = 2
             else:
-                cur_status = 2
+                cur_temper = None
+                cur_hinner = None
+                cur_inner = None
+                cur_volt = None
+                cur_forcast = None
+                cur_status = None
+                
+            if status == 'failed':
+                continue
         
             battery_values = {'BASE_N' : cur_base_id,
                           'GROUP_V' : cur_batterys_id,
