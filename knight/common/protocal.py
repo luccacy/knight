@@ -135,10 +135,11 @@ def get_common_values(data):
         '''addr : 1 byte'''
         addr = int(data[0:2], 16)
         
-        '''elec : 2 byte'''
+        '''elec : 2 byte '''
+        '''AAA'''
         elec_str = data[2:6]
         if 'xx' not in elec_str:
-            elec = convert_to_decimal(elec_str)
+            elec = convert_to_decimal(elec_str) * 0.1
         else:
             elec = -1
         
@@ -150,11 +151,11 @@ def get_common_values(data):
             inner_strs.append( data[start:start+4] )
             start += 4
         
-        
+        '''mmm'''
         for inner_str in inner_strs:
             
             if 'xx' not in inner_str:
-                inner_hex = convert_to_decimal(inner_str)
+                inner_hex = convert_to_decimal(inner_str) * 0.001
             else:
                 inner_hex = -1
             inners.append(inner_hex)
@@ -166,11 +167,12 @@ def get_common_values(data):
         for i in range(8):
             volt_strs.append( data[start:start+4] )
             start += 4
-            
+        
+        '''VVV'''
         for volt_str in volt_strs:
-           
+            
             if 'xx' not in volt_str:
-                volt_hex = convert_to_decimal(volt_str)
+                volt_hex = convert_to_decimal(volt_str) * 0.001
             else:
                 volt_hex = -1
             volts.append(volt_hex)
@@ -182,10 +184,11 @@ def get_common_values(data):
             hinner_strs.append( data[start:start+4] )
             start += 4
         
+        '''mmm'''
         for hinner_str in hinner_strs:
             
             if 'xx' not in hinner_str:
-                hinner_hex = convert_to_decimal(hinner_str)
+                hinner_hex = convert_to_decimal(hinner_str) * 0.001
             else:
                 hinner_hex = -1
             hinners.append(hinner_hex)
@@ -247,7 +250,7 @@ def decode_result(input_data):
             
         for temp_str in temp_strs:
             if 'xx' not in temp_str:
-                temp_hex = int(temp_str, 16)
+                temp_hex = int(temp_str, 16) * 0.2
             else:
                 tempr_hex = -1
             temps.append(temp_hex)

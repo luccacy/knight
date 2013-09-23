@@ -7,11 +7,13 @@ from knight import tasks
 from knight import timer_scheduler
 from knight import task_scheduler
 from knight.db import api as DB_API
+import webob.exc  
 
-
-taskstore = tasks.TS.task_store
 taskstore_instance = tasks.TS
+taskstore = tasks.TS.task_store
 taskstore_lock = tasks.TS_LOCK
+tasklist = tasks.TS.task_list
+tasklist_lock = tasks.TS.task_list_lock
 
 
 sched = timer_scheduler.SCH
@@ -39,33 +41,46 @@ class TaskController(object):
         sensor_ids = args.pop('sensor_ids')
         sensor_id_list = sensor_ids.split(',')
         taskstore_inst_tmp = tasks.TaskStore()
-        taskstore_tmp = taskstore_inst_tmp.task_store
-        alltasks = []
+#         taskstore_tmp = taskstore_inst_tmp.task_store
+#         alltasks = []
 
         '''from sensor ids to tasks'''
         for sensor_id in sensor_id_list:
             task = tasks.Task(sensor_id)
-#             sensor_ref = DB_API.sensor_get_by_id(sensor_id)
-#             task = tasks.Task(sensor_ref.COM_N)
-#             task.addr = sensor_ref.SENSOR_ADDR_N
-#             task.sensor_n = sensor_ref.SENSOR_N
-#             task.sensor_id = sensor_ref.RECORD_ID
-#             task.group_id = sensor_ref.GROUPNAME_V
-#             task.base_id = sensor_ref.BASENAME_V
-#             task.user_id = sensor_ref.IP_V
+            sensor_ref = DB_API.sensor_get_by_id(sensor_id)
+            task = tasks.Task(sensor_ref.COM_N)
+            task.addr = sensor_ref.SENSOR_ADDR_N
+            task.sensor_n = sensor_ref.SENSOR_N
+            task.sensor_id = sensor_ref.RECORD_ID
+            task.group_id = sensor_ref.GROUPNAME_V
+            task.base_id = sensor_ref.BASENAME_V
+            task.user_id = sensor_ref.IP_V
             task.cmd = 'sample1'
             task.addr = int(sensor_id)
-            alltasks.append(task)
+
+            tasklist_lock.acquire()
+            taskstore_instance.tasklist_add_task(task)
+            tasklist_lock.release()
             
+            print('=====================')
+            print('task addr : %s' % task.addr)
+            print('task sensor_n : %s' % task.sensor_n)
+            print('task group id : %s' % task.group_id)
+            print('task user_id : %s' % task.user_id)
+            print('=====================')
+        
+        print '==========end==========='
+        
+        return webob.Response(status_int=200)
         '''store all tasks to taskstore_tmp'''
-        for task in alltasks:
-            port = task.port
-            if taskstore_tmp.has_key(port):
-                taskgroup_tmp = taskstore_tmp[port]
-            else:
-                taskgroup_tmp = tasks.TaskGroup(port)  
-                taskstore_inst_tmp.add_taskgroup(port, taskgroup_tmp)
-            taskgroup_tmp.add_task(task, 'custom')
+#         for task in alltasks:
+#             port = task.port
+#             if taskstore_tmp.has_key(port):
+#                 taskgroup_tmp = taskstore_tmp[port]
+#             else:
+#                 taskgroup_tmp = tasks.TaskGroup(port)  
+#                 taskstore_inst_tmp.add_taskgroup(port, taskgroup_tmp)
+#             taskgroup_tmp.add_task(task, 'custom')
         
         '''iterate all taskgroup_tmp, if taskstore have waiting tasks
         push taskgroup_tmp' cunstom_tasks list to tasklist, if don't have,
@@ -93,17 +108,17 @@ class TaskController(object):
 #                 tg_thread = task_scheduler.TaskGroupThread(taskgroup_tmp)
 #                 tg_thread.start()
 
-        for port in taskstore_tmp:
-            taskgroup_tmp = taskstore_tmp[port]
-            
-            if taskgroup_tmp.custom_tasks_num > 0:
-                tasklist = tasks.TL
-                tasklist_lock = tasks.TL_LOCK
-                tasklist_lock.acquire()
-                tasklist.extend(taskgroup_tmp.custom_tasks)
-                tasklist_lock.release()
-                                                         
-        return {'status': 'ok'}
+#         for port in taskstore_tmp:
+#             taskgroup_tmp = taskstore_tmp[port]
+#             
+#             if taskgroup_tmp.custom_tasks_num > 0:
+# 
+#                 tasklist_lock.acquire()
+#                 tasklist.extend(taskgroup_tmp.custom_tasks)
+#                 tasklist_lock.release()
+                                           
+         
+        
 #         port = args.pop('port')
 #         task = tasks.Task(port)
 #         taskgroup = None

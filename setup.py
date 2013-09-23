@@ -42,10 +42,10 @@ manifest_template = '''
 '''
 knightservice = Target(
     # used for the versioninfo resource
-    description = "knight service",
+    description = "battery monitor",
     # what to build.  For a service, the module name (not the
     # filename) must be specified!
-    modules = ["knight.win_service"],
+    modules = ["knight.top_battery"],
     cmdline_style = 'pywin32',
     )
 

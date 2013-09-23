@@ -164,7 +164,7 @@ class Batterys(BASE, DbBase):
     BASE_N = Column(Integer)
     GROUPNAME_V = Column(String(255))
     BATTERYTYPE_V = Column(Integer)
-    BATTERYNUM_V = Column(Integer)
+    BATTERYNUM_N = Column(Integer)
     SETUP_D = Column(DateTime)
     CUR_DATE = Column(DateTime)
     DEVICE_V = Column(String(255))
@@ -185,7 +185,8 @@ class Btrundata(BASE, DbBase):
     BTKEY_V = Column(String(255))
     BASE_N = Column(Integer)
     BTSERIALNO_V = Column(String(255))
-    BATTERYTYPE_V = Column(Integer)
+    '''for test'''
+    BTTYPEKEY_N = Column(Integer)
     RUNTIME_D = Column(DateTime)
     STATUS_N = Column(Integer)
     VOL_N = Column(Float)
@@ -203,8 +204,8 @@ class Dictbattery(BASE, DbBase):
     B0 = Column(String(128))
     B1 = Column(String(128))
     STDINNER_V = Column(String(128))
-    YELLOWVALUE_V = Column(Float)
-    REDVALUE_V = Column(Float)
+    YELLOWVALUE_N = Column(Float)
+    REDVALUE_N = Column(Float)
     
 class CycleSetting(BASE, DbBase):
     

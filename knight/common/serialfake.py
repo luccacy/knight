@@ -39,10 +39,8 @@ class SerialControl(object):
     
     def write(self, data):
         try:
-            print 'data : %s' % data
-            cmd_code = int(hex(ord(data[4])),16)
             
-            print("cmd_code : %x" % cmd_code)
+            cmd_code = int(hex(ord(data[4])),16)
             
             if cmd_code == 0x31:
                 '''sample1'''

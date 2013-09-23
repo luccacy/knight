@@ -1,16 +1,26 @@
 from knight.db.sqlalchemy import api
 from knight.db.sqlalchemy import models
+from knight.common import exception
 import time
 
 def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
     
     try:
+        print('================')
+        print('batterys_id: %s' % batterys_id)
+        print('sensor_n: %s' % sensor_n)
+        print('sensor_id: %s' % sensor_id)
+        print('user_id: %s' % user_id)
         
+        print('================')
         elec = values['elec']
+        if elec < 0:
+            elec = None
+            
         inners = values['inners']
         volts = values['volts']
         hinners = values['hinners'] 
-        tempers = values['tempers']
+        tempers = values['temps']
         
         '''get common values'''
         batterys_ref = api.batterys_get_by_id(batterys_id)
@@ -46,7 +56,7 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
         cur_batterys_id = batterys_id
         
         '''update battery table'''
-        for bt_n in len(inners):
+        for bt_n in range(len(inners)):
             if inners[bt_n] < 0 :
                 continue
             
@@ -115,7 +125,7 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
             btrundata_ref = api.btrundata_create(btrundata_values)
             
             '''create pickdata'''
-            pickdata_values = {'USER_ID' : '',
+            pickdata_values = {'USER_ID' : user_id,
                                'BTKEY_V' : cur_batterys_id,
                                'BASENAME_V' : cur_base_id,
                                'SENSORNAME_V' : sensor_id,
@@ -133,9 +143,9 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
             pickdata_ref = api.pickdata_create(pickdata_values)
             
         '''update batterys table'''
-        sum_green = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 0)
-        sum_yellow = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 1)
-        sum_red = api.battery_get_count_by_status(cur_batterys_id, cur_serial_n, 2)
+        sum_green = api.battery_get_count_by_status(cur_batterys_id,  0)
+        sum_yellow = api.battery_get_count_by_status(cur_batterys_id,  1)
+        sum_red = api.battery_get_count_by_status(cur_batterys_id,  2)
         
         if sum_red > yellow_max_red or sum_yellow > yellow_max_yellow or (sum_red+sum_yellow) > yellow_max_yellow:
             batterys_status = 2
@@ -155,7 +165,7 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
         api.batterys_update(cur_batterys_id, batterys_values)
         
     except:
-        raise
+        raise exception.SensorNotFound()
     
 def delete_records_over_one_week_day():
     
@@ -167,7 +177,7 @@ def delete_records_over_one_week_day():
         api.pickdata_delete_by_time(one_day_before)
     
     except:
-        raise
+        raise exception.SensorNotFound()
     
 
     

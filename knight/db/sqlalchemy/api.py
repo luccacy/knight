@@ -85,7 +85,7 @@ def warning_get_by_id(warning_id, session=None):
     if session is None:
         session = get_session()
         
-    result = model_query(models.Pickdata, session=session).\
+    result = model_query(models.Warning, session=session).\
                      filter_by(RECORD_ID=warning_id).\
                      first()   
     if not result:
@@ -97,7 +97,7 @@ def warning_get_by_basetype(base_type, session=None):
     if session is None:
         session = get_session()
         
-    result = model_query(models.Pickdata, session=session).\
+    result = model_query(models.Warning, session=session).\
                      filter_by(BASE_TYPE=base_type).\
                      first()   
     if not result:
@@ -133,15 +133,14 @@ def  battery_get_by_groupid_and_serialnum(group_id, serial_num, session=None):
 
 '''group_id : string 111111-1
    serial_num : battery serial num'''
-def  battery_get_count_by_status(group_id, serial_num, status_n,session=None):
+def  battery_get_count_by_status(group_id,  status_n,session=None):
     if session is None:
         session = get_session()
         
     result = model_query(models.Battery, session=session).\
                 filter_by(GROUP_V = group_id).\
-                filter_by(SERIAL_N = serial_num).\
                 filter_by(STATUS_N = status_n).\
-                first()
+                count()
                 
     if not result:
         raise exception.SensorNotFound()
