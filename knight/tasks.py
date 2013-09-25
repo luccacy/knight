@@ -11,7 +11,7 @@ from threading import Thread, Lock
 from knight.common import serialutils 
 from knight.common import serial_agent 
 from knight.common import protocal
-#from knight.db import api as DB_API
+from knight.db import api as DB_API
 
 import time
 
@@ -37,7 +37,7 @@ class Task(object):
         time.sleep(3)
 
         self.output = serial.output
-        print('output : %s' % self.output)
+        
         result_dict = protocal.decode_result(self.output)
         
         return result_dict, recv_str
@@ -56,14 +56,14 @@ class Task(object):
             output = self.exec_cmd(serial, 'transport')
             result = protocal.decode_result(output)
             
-#             DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
+            DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result)
             
         self.stop(serial)
         
     def run_first_sample_step1(self, serial):
         self.start(serial)
         run_times = 0
-        print 'run sample1'
+        
         '''sample1'''
         while True:
             result_dict, right_result_str = self.exec_cmd(serial, 'sample1')
@@ -77,14 +77,14 @@ class Task(object):
             else:
                 time.sleep(1)
         
-        print('sample1 result: %s' % result_data)
+        
         return result_data
     
     def run_first_sample_step2(self, serial):
         run_times = 0
         result_dict = {}
         
-        print 'run transport'
+        
         if self.status.find('failed') >= 0:
             self.status = 'failed'
         else:
@@ -99,8 +99,8 @@ class Task(object):
                 else:
                     time.sleep(1)
         
-        print('transport result : %s' % result_dict)      
-#         DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
+        
+        DB_API.store_to_db(self.group_id, self.sensor_n, self.sensor_id, self.user_id, result_dict, self.status)
 
         self.stop(serial)
 
@@ -179,7 +179,9 @@ class TaskStore(object):
     
     def __init__(self):
         self.task_store_lock = Lock()
+        self.task_list_lock = Lock()
         self.task_store = {}
+        self.task_list = []
         
     def add_taskgroup(self, task_port, taskgroup):
         self.task_store[task_port] = taskgroup
@@ -187,11 +189,20 @@ class TaskStore(object):
     def del_taskgroup(self, task_port):
         return self.task_store.pop(task_port)
     
+    def clear_tasklist(self):
+        self.task_list = []
+        
+    def tasklist_add_task(self, task):
+        self.task_list.append(task)
+        
+    def tasklist_get_task_num(self):
+        return len(self.task_list)
+    
     def get_taskstore(self):
         return self.task_store
     
 TS = TaskStore()
 TS_LOCK = TS.task_store_lock
-TL = []
-TL_LOCK = Lock()
+
+
     

@@ -1,1 +1,0 @@
-python knight/main.py &

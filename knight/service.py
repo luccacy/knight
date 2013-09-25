@@ -76,7 +76,29 @@ def serve_wsgi(cls):
     service.start()
         
     return service
+
+class MonitorThread(Thread):
     
+    def __init__(self, mthread):
+        super(MonitorThread, self).__init__()
+        self.mthread = mthread
+        
+    def run(self):
+        
+        while(True):
+            print('-----------monitor thread----------')
+            print type(self.mthread)
+            if self.mthread.isAlive():
+                print('-----------thread is alive----------')
+            else:
+                self.mthread = None
+                self.mthread = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
+                self.mthread.start()
+                print('-----------thread is dead-----------')
+                
+            time.sleep(3)
+            
+
 def _run_wsgi(app_name):
 
     configfile=CONF.paste_file
@@ -91,6 +113,8 @@ def _run_wsgi(app_name):
     thr_custom = Thread(target=task_scheduler.custum_task_scheduler, name='task scheduler')
     thr_custom.start()
      
+    m_th = MonitorThread(thr_custom)
+    m_th.start()
     '''
     start timer scheduler thread
     '''

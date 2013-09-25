@@ -29,7 +29,7 @@ def main():
         deploy_service = service.serve_wsgi(service.DeployApiService)
         deploy_service.wait()
     except RuntimeError, e:
-        sys.exit(_("ERROR: %s") % e)
+        sys.exit(("ERROR: %s") % e)
 
 
 if __name__ == "__main__":

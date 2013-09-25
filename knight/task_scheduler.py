@@ -19,14 +19,22 @@ taskstore_lock = tasks.TS_LOCK
 
 '''run in thread'''
 def custum_task_scheduler():
+    
     while True:
         '''add all task in tasklist to taskstore'''
-        tasklist = tasks.TL
-        tasklist_lock = tasks.TL_LOCK
-        tasklist_lock.acquire()
+        tasklist = tasks.TS.task_list
+        tasklist_lock = tasks.TS.task_list_lock
+        print '-----------begin : %d--------------' % taskstore_instance.tasklist_get_task_num()
         if len(tasklist) > 0 :
             print 'push tasklist to taskstore'
+            tasklist_lock.acquire()
             for task_item in tasklist:
+                print('=====================')
+                print('task_item addr : %s' % task_item.addr)
+                print('task_item sensor_n : %s' % task_item.sensor_n)
+                print('task_item group id : %s' % task_item.group_id)
+                print('task_item user_id : %s' % task_item.user_id)
+                print('=====================')
                 port = task_item.port
                 if taskstore.has_key(port):
                     taskgroup = taskstore[port]
@@ -40,8 +48,14 @@ def custum_task_scheduler():
                 taskstore_lock.acquire()
                 taskstore_instance.add_taskgroup(port,taskgroup)
                 taskstore_lock.release()
-        tasks.TL = []
-        tasklist_lock.release()    
+                
+            taskstore_instance.clear_tasklist()
+            print('task list len: %d' % len(tasklist))
+            tasklist_lock.release()   
+        else:
+            time.sleep(1)
+            continue
+                    
         
         print 'start all custom tasks in scheduler'
         '''start all custom tasks in taskstore'''
@@ -50,40 +64,54 @@ def custum_task_scheduler():
         for group in taskstore:
             taskgroup = taskstore[group]
             port = taskgroup.port
-            
-            
+ 
+             
+             
+             
             if taskgroup.custom_tasks_num <= 0 :
                 continue
-            
-            print('=======lock: %d' % taskgroup.custom_tasks_num)
+             
             taskgroup.tg_lock.acquire()
-            print('=======lock after')
-            
+             
             custom_tasks = taskgroup.custom_tasks
+
             if taskgroup.serial_open() is None:
                 LOG.error('failed ot open serial : %d', port)
                 continue
             print('=======taskgroup : %s' % taskgroup)
             print('=======custom tasks num : %d' % taskgroup.custom_tasks_num)
+
             for task in custom_tasks:
+                print('=====================')
+                print('task1 addr : %s' % task.addr)
+                print('task1 sensor_n : %s' % task.sensor_n)
+                print('task1 group id : %s' % task.group_id)
+                print('task1 user_id : %s' % task.user_id)
+                print('=====================')
                 print('=======run sample1: %d' % taskgroup.custom_tasks_num)
                 task.run_first_sample_step1(taskgroup.serial)
-                
+                 
             time.sleep(1)
-            
+             
             for task in custom_tasks:
+                print('=====================')
+                print('task2 addr : %s' % task.addr)
+                print('task2 sensor_n : %s' % task.sensor_n)
+                print('task2 group id : %s' % task.group_id)
+                print('task2 user_id : %s' % task.user_id)
+                print('=====================')
                 print('=======run sample2: %d' % taskgroup.custom_tasks_num)
                 task.run_first_sample_step2(taskgroup.serial)
-            
+             
             print('clear taskgroup : %s' % (taskgroup.port))
             taskgroup.clear_tasks('custom')
             print('taskgroup num  : %d' % (taskgroup.custom_tasks_num))
-                
+                 
             taskgroup.serial_close()
             taskgroup.tg_lock.release()
         taskstore_lock.release()
                         
-        time.sleep(3)
+        time.sleep(1)
   
 class TaskThread(Thread):   
     def __init__(self, taskgroup, task): 

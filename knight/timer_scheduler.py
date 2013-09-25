@@ -17,8 +17,6 @@ TEN_MINUTE=10*60
 THREE_HOUR=3*60*60
 taskstore = tasks.TS.task_store
 taskstore_lock = tasks.TS_LOCK
-tasklist = tasks.TL
-tasklist_lock = tasks.TL_LOCK
 
 SCH = Scheduler(daemonic = False)
 
