@@ -1,7 +1,10 @@
 from knight.db.sqlalchemy import api
 from knight.db.sqlalchemy import models
 from knight.common import exception
+from knight.common import logger
 import time
+
+LOG = logger.get_logger(__name__)
 
 def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
     
@@ -86,8 +89,26 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
                 cur_inner = None
                 cur_volt = None
                 cur_forcast = None
-                cur_status = None
-                
+                cur_status = '采集数据失败'
+            
+            '''create pickdata'''
+            pickdata_values = {'USER_ID' : user_id,
+                               'BTKEY_V' : cur_batterys_id,
+                               'BASENAME_V' : cur_base_id,
+                               'SENSORNAME_V' : sensor_id,
+                               'SENSOR_N' : sensor_n,
+                               'BATTERY_N' : cur_serial_n,
+                               'PICKEDTIME_D' : cur_time,
+                               'VOL_N' : cur_volt,
+                               'ELEC_N' : elec,
+                               'INTER_N' : cur_inner,
+                               'TEMPER_N' : cur_temper,
+                               'HINTER' : cur_hinner,
+                               'STATUS_V': cur_status,
+                               }
+            
+            pickdata_ref = api.pickdata_create(pickdata_values)
+            
             if status == 'failed':
                 continue
         
@@ -124,23 +145,7 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
                                 }
             btrundata_ref = api.btrundata_create(btrundata_values)
             
-            '''create pickdata'''
-            pickdata_values = {'USER_ID' : user_id,
-                               'BTKEY_V' : cur_batterys_id,
-                               'BASENAME_V' : cur_base_id,
-                               'SENSORNAME_V' : sensor_id,
-                               'SENSOR_N' : sensor_n,
-                               'BATTERY_N' : cur_serial_n,
-                               'PICKEDTIME_D' : cur_time,
-                               'VOL_N' : cur_volt,
-                               'ELEC_N' : elec,
-                               'INTER_N' : cur_inner,
-                               'TEMPER_N' : cur_temper,
-                               'HINTER' : cur_hinner,
-                               'STATUS_V': cur_status,
-                               }
             
-            pickdata_ref = api.pickdata_create(pickdata_values)
             
         '''update batterys table'''
         sum_green = api.battery_get_count_by_status(cur_batterys_id,  0)
@@ -164,8 +169,44 @@ def store_to_db(batterys_id, sensor_n, sensor_id, user_id, values, status):
         
         api.batterys_update(cur_batterys_id, batterys_values)
         
+        return
+        
     except:
-        raise exception.SensorNotFound()
+        batterys_ref = api.batterys_get_by_id(batterys_id)
+        base_id = int(batterys_ref.BASE_N)
+        timestamp = time.time()
+        timestruct = time.localtime(timestamp)
+        cur_date = time.strftime('%Y-%m-%d', timestruct)
+        cur_time = time.strftime('%Y-%m-%d %H:%M:%S', timestruct)
+        cur_serial_n = None
+        elec = None
+        cur_temper = None
+        cur_hinner = None
+        cur_inner = None
+        cur_volt = None
+        cur_forcast = None
+        cur_status = '采集数据失败'
+        
+        pickdata_values = {'USER_ID' : user_id,
+                            'BTKEY_V' : cur_batterys_id,
+                            'BASENAME_V' : cur_base_id,
+                            'SENSORNAME_V' : sensor_id,
+                            'SENSOR_N' : sensor_n,
+                            'BATTERY_N' : cur_serial_n,
+                            'PICKEDTIME_D' : cur_time,
+                            'VOL_N' : cur_volt,
+                            'ELEC_N' : elec,
+                            'INTER_N' : cur_inner,
+                            'TEMPER_N' : cur_temper,
+                            'HINTER' : cur_hinner,
+                            'STATUS_V': cur_status,
+                            }
+            
+        pickdata_ref = api.pickdata_create(pickdata_values)
+        
+        LOG.error('failed to pick sensor_id : %d data', sensor_id)
+        return
+
     
 def delete_records_over_one_week_day():
     
@@ -177,7 +218,7 @@ def delete_records_over_one_week_day():
         api.pickdata_delete_by_time(one_day_before)
     
     except:
-        raise exception.SensorNotFound()
+        LOG.error('failed to delete record')
     
 
     

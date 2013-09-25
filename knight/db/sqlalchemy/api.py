@@ -6,6 +6,9 @@ Created on 2013-9-1
 from knight.db.sqlalchemy.session import get_session
 from knight.db.sqlalchemy import models
 from knight.common import exception
+from knight.common import logger
+
+LOG = logger.get_logger(__name__)
 
 def model_query(model, *args, **kwargs):
     """Query helper that accounts for context's `read_deleted` field.
@@ -31,7 +34,8 @@ def sensor_get_by_id(sensor_id, session=None):
                      filter_by(RECORD_ID=sensor_id).\
                      first()
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find sensor from sensor_id : %d', sensor_id)
+        return None
 
     return result
 
@@ -69,7 +73,8 @@ def pickdata_get(pickdata_id, session=None):
                      filter_by(RECORD_ID=pickdata_id).\
                      first()
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find Pickdata from pickdata_id : %d', pickdata_id)
+        return None
 
     return result
 
@@ -89,7 +94,8 @@ def warning_get_by_id(warning_id, session=None):
                      filter_by(RECORD_ID=warning_id).\
                      first()   
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find warning from warning_id : %d', warning_id)
+        return None
     
     return result
 
@@ -101,7 +107,8 @@ def warning_get_by_basetype(base_type, session=None):
                      filter_by(BASE_TYPE=base_type).\
                      first()   
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find warning from base_type : %d', base_type)
+        return None
     
     return result
 
@@ -127,7 +134,8 @@ def  battery_get_by_groupid_and_serialnum(group_id, serial_num, session=None):
                 first()
                 
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find battery from group_id : %s, serial_num :%s', group_id,serial_num)
+        return None
     
     return result
 
@@ -143,7 +151,8 @@ def  battery_get_count_by_status(group_id,  status_n,session=None):
                 count()
                 
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find battery from group_id : %s, status_n :%s', group_id,status_n)
+        return None
     
     return result
 
@@ -167,7 +176,8 @@ def batterys_get_by_id(batterys_id, session=None):
                     first()
                     
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find batterys from batterys_id : %s', batterys_id)
+        return None
     
     return result
 
@@ -201,7 +211,8 @@ def dictbattery_get_by_id(dictbattery_id, session=None):
                     first()
                     
     if not result:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find dictbattery from dictbattery_id : %s', dictbattery_id)
+        return None
     
     return result
 
@@ -214,7 +225,8 @@ def cyclesetting_get_cycle(id=1, session=None):
                     first()
                     
     if not cycle_ref:
-        raise exception.SensorNotFound()
+        LOG.error('failed to find cycle')
+        return None
     
     cycle = cycle_ref.CYCLE_N
     return cycle

@@ -158,8 +158,10 @@ class TaskGroup(object):
             
     def serial_open(self):
         self.serial = serial_agent.SerialAgent(5)
-        self.serial.open()
-        return self.serial     
+        if self.serial.open():
+            return self.serial
+        else:
+            return None     
         
     def serial_close(self):
         self.serial.close()

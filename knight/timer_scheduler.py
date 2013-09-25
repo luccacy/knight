@@ -9,6 +9,9 @@ import datetime
 import tasks
 import time
 from knight.db import api as DB_API
+from knight.common import logger
+
+LOG = logger.get_logger(__name__)
 
 TEN_MINUTE=10*60
 THREE_HOUR=3*60*60
@@ -64,7 +67,9 @@ def timer_task_scheduler():
             
             taskgroup.tg_lock.acquire()
             timer_tasks = taskgroup.timer_tasks
-            taskgroup.serial_open()
+            if taskgroup.serial_open() is None:
+                LOG.error('failed ot open serial : %d', port)
+                continue
                     
             for task in timer_tasks:
                 task.run_first_sample_step1(taskgroup.serial)

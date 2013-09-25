@@ -26,7 +26,6 @@ class SerialAgent(object):
     
     def read_thread(self):
         self._driver.read_thread()
-
     
     def write(self, data):
         self._driver.write(data)

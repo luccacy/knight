@@ -8,7 +8,9 @@ import tasks
 import time
 from knight.db import api as DB_API
 from threading import Thread
+from knight.common import logger
 
+LOG = logger.get_logger(__name__)
 TEN_MINUTE=10*60
 taskstore = tasks.TS.task_store
 taskstore_instance = tasks.TS
@@ -58,7 +60,9 @@ def custum_task_scheduler():
             print('=======lock after')
             
             custom_tasks = taskgroup.custom_tasks
-            taskgroup.serial_open()
+            if taskgroup.serial_open() is None:
+                LOG.error('failed ot open serial : %d', port)
+                continue
             print('=======taskgroup : %s' % taskgroup)
             print('=======custom tasks num : %d' % taskgroup.custom_tasks_num)
             for task in custom_tasks:

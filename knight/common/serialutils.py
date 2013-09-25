@@ -6,7 +6,9 @@ Created on 2013-8-28
 import serial
 import threading
 import time
+from knight.common import logger
 
+LOG = logger.get_logger(__name__)
 
 class SerialControl(object):
     
@@ -24,8 +26,10 @@ class SerialControl(object):
     def open(self):
         try:
             self.s.open()
+            return True
         except serial.SerialException, e:
-            raise
+            LOG.error('failed to open serial')
+            return False
         
     def close(self):
         #self.stop_thread()               #stop reader thread
@@ -60,13 +64,17 @@ class SerialControl(object):
                 self.output = self.output + text
 
             except serial.SerialException, e:
-                raise
+                LOG.error('failed to read serial data')
+                self.output = None
+                return
     
     def write(self, data):
         try:
             self.s.write(data)
+            return True
         except serial.SerialException, e:
-            raise
+            LOG.error('failed to write serial data : %s', data)
+            return False
         
 if __name__ == '__main__':
     s = SerialControl(5)
