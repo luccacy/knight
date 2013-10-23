@@ -37,6 +37,9 @@ class TaskController(object):
                 print('task port : %s' % task.port)
         
     def create_task(self, args):
+        print 'create task'
+        print 'create task'
+        print 'create task'
         
         sensor_ids = args.pop('sensor_ids')
         sensor_id_list = sensor_ids.split(',')
@@ -44,19 +47,22 @@ class TaskController(object):
 #         taskstore_tmp = taskstore_inst_tmp.task_store
 #         alltasks = []
 
+        print 'create task'
+        print 'create task'
+        print 'create task'
         '''from sensor ids to tasks'''
         for sensor_id in sensor_id_list:
-            task = tasks.Task(sensor_id)
+            
             sensor_ref = DB_API.sensor_get_by_id(sensor_id)
-            task = tasks.Task(sensor_ref.COM_N)
-            task.addr = sensor_ref.SENSOR_ADDR_N
+            task = tasks.Task(int(sensor_ref.COM_N))
+            task.addr = int(sensor_ref.SENSOR_ADDR_N)
             task.sensor_n = sensor_ref.SENSOR_N
             task.sensor_id = sensor_ref.RECORD_ID
             task.group_id = sensor_ref.GROUPNAME_V
             task.base_id = sensor_ref.BASENAME_V
             task.user_id = sensor_ref.IP_V
             task.cmd = 'sample1'
-            task.addr = int(sensor_id)
+            
 
             tasklist_lock.acquire()
             taskstore_instance.tasklist_add_task(task)
@@ -71,7 +77,7 @@ class TaskController(object):
         
         print '==========end==========='
         
-        return webob.Response(status_int=200)
+        return {'status':'ok'}
         '''store all tasks to taskstore_tmp'''
 #         for task in alltasks:
 #             port = task.port
